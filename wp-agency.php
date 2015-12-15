@@ -9,17 +9,19 @@ Author URI: http://proudcity.com/
 License: GPLv2
 */
 
-namespace Agency;
+namespace Proud\Agency;
 
 
-include_once('widgets/agency-contact-widget.php');
-include_once('widgets/agency-hours-widget.php');
-include_once('widgets/agency-social-links-widget.php');
+if ( ! function_exists( 'agency_init_widgets' ) ) {
+  // Init on plugins loaded
+  function agency_init_widgets() {
+    require_once plugin_dir_path(__FILE__) . '/widgets/agency-contact-widget.class.php';
+    require_once plugin_dir_path(__FILE__) . '/widgets/agency-hours-widget.class.php';
+    require_once plugin_dir_path(__FILE__) . '/widgets/agency-social-links-widget.class.php';
+  }
+}
 
-
-//include_once('wp-proud-core.php');
-
-
+add_action('plugins_loaded', __NAMESPACE__ . '\\agency_init_widgets');
 
 
 class Agency {
@@ -100,12 +102,12 @@ class Agency {
   public function agency_admin() {
     add_meta_box( 'agency_social_meta_box',
       'Social Media Accounts',
-      'display_agency_social_meta_box',
+      array($this, 'display_agency_social_meta_box'),
       'agency', 'normal', 'high'
     );
     add_meta_box( 'agency_contact_meta_box',
       'Contact information',
-      'display_agency_contact_meta_box',
+      array($this, 'display_agency_contact_meta_box'),
       'agency', 'normal', 'high'
     );
   }
@@ -127,12 +129,12 @@ class Agency {
    */
   public function agency_rest_metadata( $object, $field_name, $request ) {
       $return = array('social' => array());
-      foreach (agency_social_services() as $key => $label) {
+      foreach ($this->agency_social_services() as $key => $label) {
         if ($value = get_post_meta( $object[ 'id' ], 'social_'.$key, true )) {
           $return['social'][$key] = $value;
         }
       }
-      foreach (agency_contact_fields() as $key => $label) {
+      foreach ($this->agency_contact_fields() as $key => $label) {
         if ($value = get_post_meta( $object[ 'id' ], $key, true )) {
           $return[$key] = $value;
         }
@@ -164,7 +166,7 @@ class Agency {
 
 
   public function display_agency_social_meta_box( $agency ) {
-    foreach (agency_social_services() as $service => $label) {
+    foreach ($this->agency_social_services() as $service => $label) {
       $value = esc_html( get_post_meta( $agency->ID, 'social_'.$service, true ) );
       ?>
       <div class="field-group">
@@ -176,7 +178,7 @@ class Agency {
   }
 
   public function display_agency_contact_meta_box( $agency ) {
-    foreach (agency_contact_fields() as $key => $label) {
+    foreach ($this->agency_contact_fields() as $key => $label) {
       $value = esc_html( get_post_meta( $agency->ID, $key, true ) );
       ?>
       <div class="field-group">
@@ -199,7 +201,7 @@ class Agency {
    */
   public function add_agency_social_fields( $id, $agency ) {
     if ( $agency->post_type == 'agency' ) {
-      foreach (agency_social_services() as $service => $label) {
+      foreach ($this->agency_social_services() as $service => $label) {
         if ( !empty( $_POST['agency_social_'.$service] ) ) {
           update_post_meta( $id, 'social_'.$service, $_POST['agency_social_'.$service] );
         }
@@ -212,7 +214,7 @@ class Agency {
    */
   public function add_agency_contact_fields( $id, $agency ) {
     if ( $agency->post_type == 'agency' ) {
-      foreach (agency_contact_fields() as $field => $label) {
+      foreach ($this->agency_contact_fields() as $field => $label) {
         //if ( !empty( $_POST['agency_'.$field] ) ) {  // @todo: check if it has been set already to allow clearing of value
           update_post_meta( $id, $field, $_POST['agency_'.$field] );
         //}

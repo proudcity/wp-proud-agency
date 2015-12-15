@@ -1,9 +1,8 @@
 <?php
 
-//require_once str_replace('wp-agency/widgets/','wp-proud-core', plugin_dir_path(__FILE__)) . '/modules/proud-widget/widgets/base/widget.class.php';
-//use Proud\Core;
+use Proud\Core;
 
-class AgencySocial extends \WP_Widget {
+class AgencySocial extends Core\ProudWidget {
 
   function __construct() {
     parent::__construct(
@@ -14,7 +13,6 @@ class AgencySocial extends \WP_Widget {
   }
 
   function initialize() {
-    parent::initialize();
   }
 
   /**
@@ -23,7 +21,7 @@ class AgencySocial extends \WP_Widget {
    * @param array $args
    * @param array $instance
    */
-  public function widget( $args, $instance ) {
+  public function printWidget( $args, $instance ) {
       foreach (agency_social_services() as $service => $label) {
           $url = esc_html( get_post_meta( get_the_ID(), 'social_'.$service, true ) );
           if (!empty($url)) {

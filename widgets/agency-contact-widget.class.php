@@ -1,9 +1,8 @@
 <?php
 
-//require_once str_replace('wp-agency/widgets/','wp-proud-core', plugin_dir_path(__FILE__)) . '/modules/proud-widget/widgets/base/widget.class.php';
-//use Proud\Core;
+use Proud\Core;
 
-class AgencyContact extends \WP_Widget {
+class AgencyContact extends Core\ProudWidget {
 
   function __construct() {
     parent::__construct(
@@ -14,7 +13,6 @@ class AgencyContact extends \WP_Widget {
   }
 
   function initialize() {
-    parent::initialize();
   }
 
   /**
@@ -23,7 +21,7 @@ class AgencyContact extends \WP_Widget {
    * @param array $args
    * @param array $instance
    */
-  public function widget( $args, $instance ) {
+  public function printWidget( $args, $instance ) {
     $email = get_post_meta( get_the_ID(), 'email', true );
     ?>
     <div class="field-contact-name"><?php print get_post_meta( get_the_ID(), 'name', true ) ?></div>
