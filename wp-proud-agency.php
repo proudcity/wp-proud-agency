@@ -12,31 +12,32 @@ License: GPLv2
 namespace Proud\Agency;
 
 
-if ( ! function_exists( 'agency_init_widgets' ) ) {
+// Load Extendible
+// -----------------------
+
+if ( ! class_exists( 'ProudPlugin' ) ) {
+  require_once( plugin_dir_path(__FILE__) . 'proud-plugin.class.php' );
+}
+
+class Agency extends \ProudPlugin { {
+
+
+  public function __construct() {
+    $this->hook( 'init', 'create_agency' );
+    $this->hook( 'admin_init', 'agency_admin' );
+    $this->hook( 'plugins_loaded', 'agency_init_widgets' );
+    $this->hook( 'save_post', 'add_agency_social_fields', 10, 2 );
+    $this->hook( 'save_post', 'add_agency_contact_fields', 10, 2 );
+    $this->hook( 'rest_api_init', 'agency_rest_support' );
+    add_filter( 'template_include', array($this, 'agency_template') );
+  }
+
   // Init on plugins loaded
   function agency_init_widgets() {
     require_once plugin_dir_path(__FILE__) . '/widgets/agency-contact-widget.class.php';
     require_once plugin_dir_path(__FILE__) . '/widgets/agency-hours-widget.class.php';
     require_once plugin_dir_path(__FILE__) . '/widgets/agency-social-links-widget.class.php';
   }
-}
-
-add_action('plugins_loaded', __NAMESPACE__ . '\\agency_init_widgets');
-
-
-class Agency {
-
-
-  public function __construct() {
-    add_action( 'init', array($this, 'create_agency') );
-    add_action( 'admin_init', array($this, 'agency_admin') );
-    add_action( 'save_post', array($this, 'add_agency_social_fields'), 10, 2 );
-    add_action( 'save_post', array($this, 'add_agency_contact_fields'), 10, 2 );
-    add_filter( 'template_include', array($this, 'agency_template') );
-    add_action( 'rest_api_init', array($this, 'agency_rest_support') );
-  }
-
-
 
   public function agency_template( $template_path ) {
       if ( get_post_type() == 'agency' ) {
