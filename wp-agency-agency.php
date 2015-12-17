@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: Agency
+Plugin Name: Proud Agency
 Plugin URI: http://proudcity.com/
 Description: Declares an Agency custom post type.
 Version: 1.0
