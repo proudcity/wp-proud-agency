@@ -23,6 +23,11 @@ class Agency extends \ProudPlugin { {
 
 
   public function __construct() {
+    parent::__construct( array(
+      'textdomain'     => 'wp-proud-agency',
+      'plugin_path'    => __FILE__,
+    ) );
+
     $this->hook( 'init', 'create_agency' );
     $this->hook( 'admin_init', 'agency_admin' );
     $this->hook( 'plugins_loaded', 'agency_init_widgets' );
