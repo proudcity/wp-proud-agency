@@ -11,15 +11,13 @@ License: GPLv2
 
 namespace Proud\Agency;
 
-
 // Load Extendible
 // -----------------------
-
 if ( ! class_exists( 'ProudPlugin' ) ) {
-  require_once( plugin_dir_path(__FILE__) . 'proud-plugin.class.php' );
+  require_once( plugin_dir_path(__FILE__) . '../wp-proud-core/proud-plugin.class.php' );
 }
 
-class Agency extends \ProudPlugin { {
+class Agency extends \ProudPlugin {
 
 
   public function __construct() {
