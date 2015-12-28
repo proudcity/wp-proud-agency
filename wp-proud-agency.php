@@ -32,6 +32,7 @@ class Agency extends \ProudPlugin {
     $this->hook( 'save_post', 'add_agency_social_fields', 10, 2 );
     $this->hook( 'save_post', 'add_agency_contact_fields', 10, 2 );
     $this->hook( 'rest_api_init', 'agency_rest_support' );
+    $this->hook( 'after_setup_theme', 'add_custom_sizes' );
     add_filter( 'template_include', array($this, 'agency_template') );
   }
 
@@ -61,6 +62,10 @@ class Agency extends \ProudPlugin {
           }
       }
       return $template_path;
+  }
+
+  public function add_custom_sizes() {
+    add_image_size( 'agency-thumb', 300, 170, true );
   }
 
 
@@ -95,7 +100,7 @@ class Agency extends \ProudPlugin {
           'hierarchical'       => false,
           'menu_position'      => null,
           'show_in_rest'       => true,
-          'rest_base'          => 'agency',
+          'rest_base'          => 'agencies',
           'rest_controller_class' => 'WP_REST_Posts_Controller',
           'supports'           => array( 'title', 'editor', 'thumbnail', 'excerpt')
       );
@@ -244,18 +249,19 @@ class Agency extends \ProudPlugin {
    * Gets the url for the agency homepage (internal or external)
    */
   public function the_agency_social($post = 0) {
-    $url = get_post_meta( get_the_ID(), 'url', true );
-    if ( !empty($url) ) {
-      echo esc_url( $url );
-    }
-    else {
-      echo esc_url( apply_filters( 'the_permalink', get_permalink( $post ), $post ) );
-    }
-  }                   
-
-
+    foreach ($this->agency_social_services() as $service => $label) {
+        $url = esc_html( get_post_meta( get_the_ID(), 'social_'.$service, true ) );
+        if (!empty($url)) {
+        ?>
+            <a href="<?php print $url; ?>" title="<?php print ucfirst($service); ?>" target="_blank">
+                <i class="fa fa-<?php print $service; ?>"></i>
+            </a> 
+        <?php
+        }
+    } //foreach
+  }
 
 } // class
 
 
-new Agency;
+$Agency = new Agency;

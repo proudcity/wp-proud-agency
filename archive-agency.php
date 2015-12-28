@@ -1,16 +1,16 @@
 <?php get_header(); ?>
-<section id="primary">
+<div class="card-columns card-columns-sm-2 card-columns-md-3 card-columns-xs-1">
     <?php if ( have_posts() ) : ?>
 
         <?php while ( have_posts() ) : the_post(); ?>
             <div class="card" data-equalize-height="">
-                <a href="<?php the_agency_permalink(); ?>"><?php the_post_thumbnail( array( 400, 200 ) ); ?></a>
+                <a href="<?php $Agency->the_agency_permalink() ?>"><?php the_post_thumbnail( 'agency-thumb' ) ?></a>
                 <div class="card-block">
-                    <h4 class="card-title"><a href="<?php the_agency_permalink(); ?>"><?php the_title(); ?></a></h4>
+                    <h4 class="card-title"><a href="<?php $Agency->the_agency_permalink() ?>"><?php the_title() ?></a></h4>
                     <p class="card-text">
-                      <?php esc_html( get_post_meta( get_the_ID(), 'phone', true ) ); ?><br/>
+                      <?php //esc_html( get_post_meta( get_the_ID(), 'phone', true ) ) ?>
+                      <?php $Agency->the_agency_social() ?>
                     </p>
-                    <a href="#" class="btn btn-primary">Learn more</a>
                 </div>
             </div>
         <?php endwhile; ?>
@@ -24,6 +24,5 @@
             </nav>
         <?php };
     endif; ?>
-</section>
-<br /><br />
+</div>
 <?php get_footer(); ?>
