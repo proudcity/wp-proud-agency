@@ -22,10 +22,21 @@ class AgencyMenu extends Core\ProudWidget {
    * @param array $instance
    */
   public function printWidget( $args, $instance ) {
+      $args = array(
+        'menu' => $menu,
+        'menu_class' => 'nav nav-pills nav-stacked',          
+      );
       if ('agency' === get_post_type()) {
           if ( $menu = get_post_meta( get_the_ID(), 'agency_menu', true ) ) {
-              echo wp_nav_menu( array('menu' => $menu) );
+              wp_nav_menu( array('menu' => $menu) );
           }
+      }
+      else {
+        $args = array(
+          'menu' => $menu,
+          'menu_class' => 'nav nav-pills nav-stacked',          
+        );
+        wp_nav_menu( $args );
       }
   }
 }
