@@ -23,17 +23,18 @@ class AgencyMenu extends Core\ProudWidget {
    */
   public function printWidget( $args, $instance ) {
       $args = array(
-        'menu' => $menu,
         'menu_class' => 'nav nav-pills nav-stacked',          
       );
       if ('agency' === get_post_type()) {
           if ( $menu = get_post_meta( get_the_ID(), 'agency_menu', true ) ) {
-              wp_nav_menu( array('menu' => $menu) );
+              $args['menu'] = $menu;
+              wp_nav_menu( $args );
           }
       }
       else {
+        global $pageInfo;
         $args = array(
-          'menu' => $menu,
+          'menu' => $pageInfo['menu'],
           'menu_class' => 'nav nav-pills nav-stacked',          
         );
         wp_nav_menu( $args );
