@@ -57,13 +57,13 @@ class Agency extends \ProudPlugin {
                   $template_path = plugin_dir_path( __FILE__ ) . '/single-agency.php';
               }*/
           }
-          elseif ( is_archive() ) {
+          /*elseif ( is_archive() ) {
               if ( $theme_file = locate_template( array ( 'loop-agency.php' ) ) ) {
                   $template_path = $theme_file;
               } else {
                   $template_path = plugin_dir_path( __FILE__ ) . '/archive-agency.php';
               }
-          }
+          }*/
       }
       return $template_path;
   }
@@ -100,7 +100,7 @@ class Agency extends \ProudPlugin {
           'query_var'          => true,
           'rewrite'            => array( 'slug' => 'agencies' ),
           'capability_type'    => 'post',
-          'has_archive'        => true,
+          'has_archive'        => false,
           'hierarchical'       => false,
           'menu_position'      => null,
           'show_in_rest'       => true,
