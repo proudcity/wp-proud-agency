@@ -75,6 +75,7 @@ class Agency extends \ProudPlugin {
 
   public function create_agency() {
       $labels = array(
+          'name'               => _x( 'Agencies', 'post name', 'wp-agency' ),
           'singular_name'      => _x( 'Agency', 'post type singular name', 'wp-agency' ),
           'menu_name'          => _x( 'Agencies', 'admin menu', 'wp-agency' ),
           'name_admin_bar'     => _x( 'Agency', 'add new on admin bar', 'wp-agency' ),
