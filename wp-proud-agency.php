@@ -35,8 +35,12 @@ class Agency extends \ProudPlugin {
     $this->hook( 'save_post', 'add_agency_social_fields', 10, 2 );
     $this->hook( 'save_post', 'add_agency_contact_fields', 10, 2 );
     $this->hook( 'rest_api_init', 'agency_rest_support' );
-    $this->hook( 'after_setup_theme', 'add_custom_sizes' );
+    $this->hook( 'before_delete_post', 'delete_agency_menu' );
+    add_action( 'save_post', 'my_project_updated_send_email' );
+
     add_filter( 'template_include', array($this, 'agency_template') );
+    add_filter( 'wp_insert_post_data' , array($this, 'add_agency_wr_code') , -10, 2 );
+
   }
 
   // Init on plugins loaded
@@ -67,11 +71,6 @@ class Agency extends \ProudPlugin {
       }
       return $template_path;
   }
-
-  public function add_custom_sizes() {
-    add_image_size( 'agency-thumb', 300, 170, true );
-  }
-
 
   public function create_agency() {
       $labels = array(
@@ -129,6 +128,9 @@ class Agency extends \ProudPlugin {
       array($this, 'display_agency_contact_meta_box'),
       'agency', 'normal', 'high'
     );
+    
+    // @todo: see if we can move the editor below the fields (at least agency type?)
+    // See: https://wordpress.org/support/topic/move-custom-meta-box-above-editor
   }
 
   public function agency_rest_support() {
@@ -176,7 +178,7 @@ class Agency extends \ProudPlugin {
     return array(
       'name' => 'Contact name',
       'email' => 'Contact email',
-      'phone' => 'Phone number',
+      'phone' => '123-456-7890',
       'address' => 'Physical address',
       'hours' => "Sunday: Closed\r\nMonday: 9:30am - 9:00pm\r\nTuesday: 9:00am - 5:00pm",
     );
@@ -188,7 +190,7 @@ class Agency extends \ProudPlugin {
       $value = esc_html( get_post_meta( $agency->ID, 'social_'.$service, true ) );
       ?>
       <div class="field-group">
-        <label><?php print ucfirst($service); ?></label>
+        <label><?php print ucfirst($service); ?>:</label>
         <input type="textfield" name="agency_social_<?php print $service; ?>" value="<?php print $value; ?>" placeholder="<?php print $label; ?>" />
       </div>
       <?php
@@ -200,10 +202,10 @@ class Agency extends \ProudPlugin {
       $value = esc_html( get_post_meta( $agency->ID, $key, true ) );
       ?>
       <div class="field-group">
-        <label><?php print ucfirst($key); ?></label>
+        <label><?php print ucfirst($key); ?>:</label>
         <?php if ($key == 'hours') { ?>
           <textarea rows="5" name="agency_<?php print $key; ?>" placeholder="<?php print $label; ?>"><?php print $value; ?></textarea><br/>
-          Format: Monday: 9:30am - 9:00pm
+          <div class="description">Format: Monday: 9:30am - 9:00pm</div>
         <?php } elseif ('address' == $key) { ?>
           <textarea rows="2" name="agency_<?php print $key; ?>" placeholder="<?php print $label; ?>"><?php print $value; ?></textarea><br/>
         <?php } else { ?>
@@ -218,6 +220,14 @@ class Agency extends \ProudPlugin {
    * Displays the Agency Type metadata fieldset.
    */
   public function display_agency_section_meta_box( $agency ) {
+    //if ( !empty($agency->post_title) && empty($agency->post_content) ) {
+    //  $agency->post_content = $this->agency_wr_code( $data['post_title'], get_the_post_thumbnail_url($post_id) );
+    //  update_post_meta( $agency->ID, '_wr_page_builder_content', $data['post_content'] );
+    //  update_post_meta( $agency->ID, '_wr_page_active_tab', 1 );
+    //  update_post_meta( $agency->ID, '_wr_deactivate_pb', 0 );
+    //}
+    //update_post_meta( $agency->ID, '_wr_page_active_tab', 1 );
+
     $menus = get_registered_nav_menus();
 
     $menus = get_terms( 'nav_menu', array( 'hide_empty' => false ) );
@@ -226,29 +236,31 @@ class Agency extends \ProudPlugin {
       '' => 'No menu',
       'new' => 'Create new menu',
     );
-
     foreach ( $menus as $menu ) {
       $menuArray[$menu->slug] = $menu->name;
     }
-
     $type = get_post_meta( $agency->ID, 'agency_type', true );
-    $type = $type ? $type : 'page';
-    $menu = get_post_meta( $agency->ID, 'agency_menu', true );
+    //$type = $type ? $type : 'page';
+    $menu = get_post_meta( $agency->ID, 'post_menu', true );
     $menu = $menu ? $menu : 'new';
-    ?>
-      <label>Agency type</label>
-      <div><label><input type="radio" name="agency_type" class="agency_type" value="page" <?php if('page' === $type) { echo 'checked="checked"'; } ?>/>Single page</label></div>
-      <div><label><input type="radio" name="agency_type" class="agency_type" value="external" <?php if('external' === $type) { echo 'checked="checked"'; } ?>/>External link</label></div>
-      <div><label><input type="radio" name="agency_type" class="agency_type" value="section" <?php if('section' === $type) { echo 'checked="checked"'; } ?>/>Section</label></div>
 
-      <div id="agency_url_wrapper">
-        <label>Url</label>
+    $isNew = empty($agency->post_title) ? 1 : 0;
+    ?>
+      <label style="margin-top: .5em;">Agency type:</label>
+      <div class="checkboxes">
+        <div><label><input type="radio" name="agency_type" class="agency_type" value="page" <?php if('page' === $type) { echo 'checked="checked"'; } ?>/>Single page</label></div>
+        <div><label><input type="radio" name="agency_type" class="agency_type" value="external" <?php if('external' === $type) { echo 'checked="checked"'; } ?>/>External link</label></div>
+        <div><label><input type="radio" name="agency_type" class="agency_type" value="section" <?php if('section' === $type) { echo 'checked="checked"'; } ?>/>Section</label></div>
+      </div>
+
+      <div id="agency_url_wrapper" class="field-group">
+        <label>Url:</label>
         <input type="text" name="agency_url" placeholder="Enter the full URL to an existing site" value="<?php echo esc_url( get_post_meta( $agency->ID, 'url', true ) ) ?>" />
       </div>
 
-      <div id="agency_menu_wrapper">
-        <label>Menu</label>
-        <select name="agency_menu">
+      <div id="post_menu_wrapper">
+        <label>Menu: </label>
+        <select name="post_menu">
           <?php foreach($menuArray as $key => $item) { ?>
             <option value="<?php echo $key ?>" <?php if ($key === $menu) { echo 'selected="selected"'; } ?>><?php echo $item ?></option>
           <?php } ?>
@@ -256,15 +268,29 @@ class Agency extends \ProudPlugin {
       </div>
 
       <script>
+        var isNewPost=<?php echo $isNew ?>;
+        jQuery('#agency_section_meta_box').appendTo('#titlediv').css('margin-top', '1em');
         function changeType() {
-          jQuery('#agency_url_wrapper, #agency_menu_wrapper').hide();
+          jQuery('#agency_url_wrapper, #post_menu_wrapper, #wr_editor_tabs, .wr-editor-tab-content').hide();
+          //if (isNewPost) {
+          //  window.setTimeout(function(){jQuery('#wr_editor_tabs a[href="#wr_editor_tab2"]').trigger('click');}, 1000);
+          //}
           var type = jQuery('input.agency_type:checked').val();
-          console.log(type);
           if (type == 'external') {
             jQuery('#agency_url_wrapper').show();
           }
           else if (type =='section') {
-            jQuery('#agency_menu_wrapper').show();
+            jQuery('#post_menu_wrapper').show();
+            activateWR();
+          }
+          else if (type =='page') {
+            activateWR();
+          }
+        }
+        function activateWR(){
+          
+          if (!isNewPost) {
+            jQuery('#wr_editor_tabs, .wr-editor-tab-content').show();
           }
         }
         changeType();
@@ -274,7 +300,7 @@ class Agency extends \ProudPlugin {
   }
 
   /**
-   * Saves social metadata fields 
+   * Saves social metadata fields and saves/creates the menu
    */
   public function add_agency_section_fields( $id, $agency ) {
     if ( $agency->post_type == 'agency' ) {
@@ -284,12 +310,14 @@ class Agency extends \ProudPlugin {
         update_post_meta( $id, 'url', esc_url($_POST['agency_url'] ));
       }
       else if ('section' === $type) {
-        $menu = $_POST['agency_menu'];
+        $menu = $_POST['post_menu'];
         if ('new' === $menu) {
-          $menu = wp_create_nav_menu($agency->post_title);
+          $menuId = wp_create_nav_menu($agency->post_title);
+          $objMenu = get_term_by( 'id', $menuId, 'nav_menu');
+          $menu = $objMenu->slug;
         }
         if (!is_array($menu)) {
-          update_post_meta( $id, 'agency_menu', $menu );
+          update_post_meta( $id, 'post_menu', $menu );
         }
       }
     }
@@ -323,35 +351,46 @@ class Agency extends \ProudPlugin {
   }
 
   /**
-   * Gets the url for the agency homepage (internal or external)
+   * Adds the Woo Rockets code if none is set and this is a section.
    */
-  public function the_agency_permalink($post = 0) {
-    $url = get_post_meta( get_the_ID(), 'url', true );
-    if ( !empty($url) ) {
-      echo esc_html( $url );
+  public function add_agency_wr_code( $data , $postarr ) {
+    if ('section' === $_POST['agency_type'] && empty($data['post_content'])) {
+      $data['post_content'] = $this->agency_wr_code($data['post_title'], get_the_post_thumbnail_url($data['ID']));
+      update_post_meta( $data['ID'], '_wr_page_builder_content', $data['post_content'] );
+      update_post_meta( $data['ID'], '_wr_page_active_tab', 1 );
     }
-    else {
-      echo esc_url( apply_filters( 'the_permalink', get_permalink( $post ), $post ) );
-    }
-  }                   
+    return $data;
+  }
+
+   /**
+   * Adds the Woo Rockets code if none is set and this is a section.
+   */
+  public function delete_agency_menu( $post_id ) {
+    $menu = get_post_meta( $post_id, 'post_menu' );
+    wp_delete_nav_menu( $menu );
+  }
 
   /**
-   * Gets the url for the agency homepage (internal or external)
+   * Returns the default Woo Rockets code for agencies
    */
-  public function the_agency_social($post = 0) {
-    foreach ($this->agency_social_services() as $service => $label) {
-        $url = esc_html( get_post_meta( get_the_ID(), 'social_'.$service, true ) );
-        if (!empty($url)) {
-        ?>
-            <a href="<?php print $url; ?>" title="<?php print ucfirst($service); ?>" target="_blank">
-                <i class="fa fa-<?php print $service; ?>"></i>
-            </a> 
-        <?php
-        }
-    } //foreach
+  private function agency_wr_code($title, $image) {
+    return '[wr_row width="full" background="none" border_width_value_="0" border_style="solid" border_color="#000" div_padding_top="10" div_padding_left="10" div_padding_bottom="10" div_padding_right="10" ][wr_column span="span12" ][wr_jumbotronheader div_margin_top="0" div_margin_left="0" div_margin_bottom="25" div_margin_right="0" include_title="no" background="image" image="'.$image.'" img_repeat="none" background_size="normal" paralax="no" make_inverse="no" box_background="none" disabled_el="no" ]<h1>'.$title.'</h1>[/wr_jumbotronheader][/wr_column][/wr_row][wr_row width="boxed" background="none" solid_color_value="#FFFFFF" solid_color_color="#ffffff" gradient_color="0% #FFFFFF,100% #000000" gradient_direction="vertical" repeat="full" img_repeat="full" autoplay="yes" position="center center" paralax="no" border_width_value_="0" border_style="solid" border_color="#000" div_padding_top="10" div_padding_bottom="10" div_padding_right="10" div_padding_left="10" ][wr_column span="span4" ][wr_widget widget_id="AgencyMenu"]widget-agency_menu%5B%5D%5Btitle%5D=[/wr_widget][wr_widget widget_id="AgencyContact"]widget-agency_contact%5B%5D%5Btitle%5D=Contact[/wr_widget][wr_widget widget_id="AgencySocial"]widget-agency_social%5B%5D%5Btitle%5D=Connect[/wr_widget][wr_widget widget_id="AgencyHours"]widget-agency_hours%5B%5D%5Btitle%5D=Hours[/wr_widget][/wr_column][wr_column span="span8" ][wr_text text_margin_top="0" text_margin_bottom="0" enable_dropcap="no" appearing_animation="0" disabled_el="no" ][/wr_text][/wr_column][/wr_row]';
   }
 
 } // class
-
-
 $Agency = new Agency;
+
+
+/**
+ * Gets the url for the agency homepage (internal or external)
+ */
+function get_agency_permalink($post = 0) {
+  $post = $post > 0 ? $post : get_the_ID();
+  $url = get_post_meta( $post, 'url', true );
+  if ( !empty($url) ) {
+    return esc_html( $url );
+  }
+  else {
+    return esc_url( apply_filters( 'the_permalink', get_permalink( $post ), $post ) );
+  }
+}

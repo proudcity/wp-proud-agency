@@ -1,6 +1,7 @@
 <?php
 
 use Proud\Core;
+use Agency;
 
 class AgencySocial extends Core\ProudWidget {
 
@@ -22,14 +23,19 @@ class AgencySocial extends Core\ProudWidget {
    * @param array $instance
    */
   public function printWidget( $args, $instance ) {
-      foreach (agency_social_services() as $service => $label) {
+      // @todo: use Agency->agency_social_services() to get this
+      $agencies = array(
+          'facebook' => 'http://facebook.com/pages/',
+          'twitter' => 'http://twitter.com/',
+          'instagram' => 'http://instagram.com/',
+          'youtube' => 'http://youtube.com/',
+          'rss' => 'Enter url to RSS news feed',
+          'ical' => 'Enter url to iCal calendar feed',
+      );
+      foreach ($agencies as $service => $label) {
           $url = esc_html( get_post_meta( get_the_ID(), 'social_'.$service, true ) );
           if (!empty($url)) {
-              ?>
-              <a href="<?php print $url; ?>" title="<?php print ucfirst($service); ?>" target="_blank">
-                  <i class="fa fa-<?php print $service; ?>"></i>
-              </a> 
-              <?php
+              ?><a href="<?php print $url; ?>" title="<?php print ucfirst($service); ?>" target="_blank" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-<?php print $service; ?> fa-stack-1x fa-inverse"></i></a><?php
           }
       }
   }
