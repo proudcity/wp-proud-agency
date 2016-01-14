@@ -36,7 +36,8 @@ class Agency extends \ProudPlugin {
     $this->hook( 'save_post', 'add_agency_contact_fields', 10, 2 );
     $this->hook( 'rest_api_init', 'agency_rest_support' );
     $this->hook( 'before_delete_post', 'delete_agency_menu' );
-    add_action( 'save_post', 'my_project_updated_send_email' );
+    // @todo fix this???
+    // add_action( 'save_post', 'my_project_updated_send_email' );
 
     add_filter( 'template_include', array($this, 'agency_template') );
     add_filter( 'wp_insert_post_data' , array($this, 'add_agency_wr_code') , -10, 2 );
@@ -303,6 +304,7 @@ class Agency extends \ProudPlugin {
    * Saves social metadata fields and saves/creates the menu
    */
   public function add_agency_section_fields( $id, $agency ) {
+
     if ( $agency->post_type == 'agency' ) {
       $type = $_POST['agency_type'];
       update_post_meta( $id, 'agency_type', $type );
@@ -354,10 +356,16 @@ class Agency extends \ProudPlugin {
    * Adds the Woo Rockets code if none is set and this is a section.
    */
   public function add_agency_wr_code( $data , $postarr ) {
-    if ('section' === $_POST['agency_type'] && empty($data['post_content'])) {
-      $data['post_content'] = $this->agency_wr_code($data['post_title'], get_the_post_thumbnail_url($data['ID']));
-      update_post_meta( $data['ID'], '_wr_page_builder_content', $data['post_content'] );
-      update_post_meta( $data['ID'], '_wr_page_active_tab', 1 );
+
+    // Add default styles + content ?
+    if ('section' === $_POST['agency_type'] && !empty($data['ID']) && empty($data['post_content'])) {
+      // Hide page title + make full width
+      $_POST['proud_full_width'] = 'on';
+      $_POST['proud_hide_title'] = 'on';
+
+      // Let WR handle default content.
+      $_POST['shortcode_content'] = $this->agency_wr_code($data['post_title'], get_the_post_thumbnail_url($data['ID']));
+      $_POST['wr_active_tab'] = 1;
     }
     return $data;
   }
@@ -374,7 +382,24 @@ class Agency extends \ProudPlugin {
    * Returns the default Woo Rockets code for agencies
    */
   private function agency_wr_code($title, $image) {
-    return '[wr_row width="full" background="none" border_width_value_="0" border_style="solid" border_color="#000" div_padding_top="10" div_padding_left="10" div_padding_bottom="10" div_padding_right="10" ][wr_column span="span12" ][wr_jumbotronheader div_margin_top="0" div_margin_left="0" div_margin_bottom="25" div_margin_right="0" include_title="no" background="image" image="'.$image.'" img_repeat="none" background_size="normal" paralax="no" make_inverse="no" box_background="none" disabled_el="no" ]<h1>'.$title.'</h1>[/wr_jumbotronheader][/wr_column][/wr_row][wr_row width="boxed" background="none" solid_color_value="#FFFFFF" solid_color_color="#ffffff" gradient_color="0% #FFFFFF,100% #000000" gradient_direction="vertical" repeat="full" img_repeat="full" autoplay="yes" position="center center" paralax="no" border_width_value_="0" border_style="solid" border_color="#000" div_padding_top="10" div_padding_bottom="10" div_padding_right="10" div_padding_left="10" ][wr_column span="span4" ][wr_widget widget_id="AgencyMenu"]widget-agency_menu%5B%5D%5Btitle%5D=[/wr_widget][wr_widget widget_id="AgencyContact"]widget-agency_contact%5B%5D%5Btitle%5D=Contact[/wr_widget][wr_widget widget_id="AgencySocial"]widget-agency_social%5B%5D%5Btitle%5D=Connect[/wr_widget][wr_widget widget_id="AgencyHours"]widget-agency_hours%5B%5D%5Btitle%5D=Hours[/wr_widget][/wr_column][wr_column span="span8" ][wr_text text_margin_top="0" text_margin_bottom="0" enable_dropcap="no" appearing_animation="0" disabled_el="no" ][/wr_text][/wr_column][/wr_row]';
+    return [
+      '[wr_row width="full" background="none" border_width_value_="0" border_style="solid" border_color="#000" div_padding_top="10" div_padding_left="10" div_padding_bottom="10" div_padding_right="10" ]',
+      '[wr_column span="span12" ]',
+      '[wr_jumbotronheader div_margin_top="0" div_margin_left="0" div_margin_bottom="25" div_margin_right="0" include_title="no" background="image" image="'.$image.'" img_repeat="none" background_size="normal" paralax="no" make_inverse="no" box_background="none" disabled_el="no" ]<h1>'.$title.'</h1>[/wr_jumbotronheader]',
+      '[/wr_column]',
+      '[/wr_row]',
+      '[wr_row width="boxed" background="none" solid_color_value="#FFFFFF" solid_color_color="#ffffff" gradient_color="0% #FFFFFF,100% #000000" gradient_direction="vertical" repeat="full" img_repeat="full" autoplay="yes" position="center center" paralax="no" border_width_value_="0" border_style="solid" border_color="#000" div_padding_top="10" div_padding_bottom="10" div_padding_right="10" div_padding_left="10" ]',
+      '[wr_column span="span4" ]',
+      '[wr_widget widget_id="AgencyMenu"]widget-agency_menu%5B%5D%5Btitle%5D=[/wr_widget]',
+      '[wr_widget widget_id="AgencyContact"]widget-agency_contact%5B%5D%5Btitle%5D=Contact[/wr_widget]',
+      '[wr_widget widget_id="AgencySocial"]widget-agency_social%5B%5D%5Btitle%5D=Connect[/wr_widget]',
+      '[wr_widget widget_id="AgencyHours"]widget-agency_hours%5B%5D%5Btitle%5D=Hours[/wr_widget]',
+      '[/wr_column]',
+      '[wr_column span="span8" ]',
+      '[wr_text text_margin_top="0" text_margin_bottom="0" enable_dropcap="no" appearing_animation="0" disabled_el="no" ][/wr_text]',
+      '[/wr_column]',
+      '[/wr_row]'
+    ];
   }
 
 } // class
