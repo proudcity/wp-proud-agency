@@ -1,7 +1,6 @@
 <?php
 
 use Proud\Core;
-use Agency;
 
 class AgencySocial extends Core\ProudWidget {
 
