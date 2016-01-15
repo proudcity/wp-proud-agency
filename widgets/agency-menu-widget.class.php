@@ -26,7 +26,7 @@ class AgencyMenu extends Core\ProudWidget {
         'menu_class' => 'nav nav-pills nav-stacked',          
       );
       if ('agency' === get_post_type()) {
-          if ( $menu = get_post_meta( get_the_ID(), 'agency_menu', true ) ) {
+          if ( $menu = get_post_meta( get_the_ID(), 'post_menu', true ) ) {
               $args['menu'] = $menu;
               wp_nav_menu( $args );
           }
