@@ -36,7 +36,6 @@ class Agency extends \ProudPlugin {
     $this->hook( 'save_post', 'add_agency_contact_fields', 10, 2 );
     $this->hook( 'rest_api_init', 'agency_rest_support' );
     $this->hook( 'before_delete_post', 'delete_agency_menu' );
-    add_action( 'save_post', 'my_project_updated_send_email' );
 
     add_filter( 'template_include', array($this, 'agency_template') );
     add_filter( 'wp_insert_post_data' , array($this, 'add_agency_wr_code') , -10, 2 );
