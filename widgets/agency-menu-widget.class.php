@@ -23,7 +23,8 @@ class AgencyMenu extends Core\ProudWidget {
    */
   public function printWidget( $args, $instance ) {
       $args = array(
-        'menu_class' => 'nav nav-pills nav-stacked',          
+        'menu_class' => 'nav nav-pills nav-stacked submenu',
+        'fallback_cb' => false,
       );
       if ('agency' === get_post_type()) {
           if ( $menu = get_post_meta( get_the_ID(), 'post_menu', true ) ) {
@@ -33,6 +34,7 @@ class AgencyMenu extends Core\ProudWidget {
       }
       else {
         global $pageInfo;
+        print_r($pageInfo);die();
         $args = array(
           'menu' => $pageInfo['menu'],
           'menu_class' => 'nav nav-pills nav-stacked',          
