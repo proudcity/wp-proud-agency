@@ -34,7 +34,6 @@ class AgencyMenu extends Core\ProudWidget {
       }
       else {
         global $pageInfo;
-        print_r($pageInfo);die();
         $args = array(
           'menu' => $pageInfo['menu'],
           'menu_class' => 'nav nav-pills nav-stacked',          
