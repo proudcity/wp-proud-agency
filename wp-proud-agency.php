@@ -315,14 +315,24 @@ class Agency extends \ProudPlugin {
     }
   }
 
+
   /**
    * Saves social metadata fields 
    */
   public function add_agency_social_fields( $id, $agency ) {
     if ( $agency->post_type == 'agency' ) {
       foreach ($this->agency_social_services() as $service => $label) {
-        if ( !empty( $_POST['agency_social_'.$service] ) ) {
-          update_post_meta( $id, 'social_'.$service, $_POST['agency_social_'.$service] );
+        $field = 'social_'.$service;
+        $old = get_post_meta( $id, $field, true );
+        $new = $_POST['agency_social_' . $service];
+        if( !is_null( $old ) ){
+          if ( is_null( $new ) ){
+            delete_post_meta( $id, $field );
+          } else {
+            update_post_meta( $id, $field, $new, $old );
+          }
+        } elseif ( !is_null( $new ) ){
+          add_post_meta( $id, $field, $new, true );
         }
       }
     }
@@ -334,9 +344,17 @@ class Agency extends \ProudPlugin {
   public function add_agency_contact_fields( $id, $agency ) {
     if ( $agency->post_type == 'agency' ) {
       foreach ($this->agency_contact_fields() as $field => $label) {
-        //if ( !empty( $_POST['agency_'.$field] ) ) {  // @todo: check if it has been set already to allow clearing of value
-          update_post_meta( $id, $field, $_POST['agency_'.$field] );
-        //}
+          $old = get_post_meta( $id, $field, true );
+          $new = $_POST['agency_' . $field] ;
+          if( !is_null( $old ) ){
+            if ( is_null( $new ) ){
+              delete_post_meta( $id, $field );
+            } else {
+              update_post_meta( $id, $field, $new, $old );
+            }
+          } elseif ( !is_null( $new ) ){
+            add_post_meta( $id, $field, $new, true );
+          }
       }
     }
   }
@@ -370,12 +388,12 @@ class Agency extends \ProudPlugin {
    */
   private function agency_wr_code($title, $image) {
     return [
-      '[wr_row width="full" background="none" border_width_value_="0" border_style="solid" border_color="#000" div_padding_top="10" div_padding_left="10" div_padding_bottom="10" div_padding_right="10" ]',
+      '[wr_row width="full" background="none" border_width_value_="0" border_style="solid" border_color="#000" div_padding_top="0" div_padding_left="0" div_padding_bottom="0" div_padding_right="0" ]',
       '[wr_column span="span12" ]',
       '[wr_jumbotronheader div_margin_top="0" div_margin_left="0" div_margin_bottom="25" div_margin_right="0" include_title="no" background="image" image="'.$image.'" img_repeat="none" background_size="normal" paralax="no" make_inverse="no" box_background="none" disabled_el="no" ]<h1>'.$title.'</h1>[/wr_jumbotronheader]',
       '[/wr_column]',
       '[/wr_row]',
-      '[wr_row width="boxed" background="none" solid_color_value="#FFFFFF" solid_color_color="#ffffff" gradient_color="0% #FFFFFF,100% #000000" gradient_direction="vertical" repeat="full" img_repeat="full" autoplay="yes" position="center center" paralax="no" border_width_value_="0" border_style="solid" border_color="#000" div_padding_top="10" div_padding_bottom="10" div_padding_right="10" div_padding_left="10" ]',
+      '[wr_row width="boxed" background="none" solid_color_value="#FFFFFF" solid_color_color="#ffffff" gradient_color="0% #FFFFFF,100% #000000" gradient_direction="vertical" repeat="full" img_repeat="full" autoplay="yes" position="center center" paralax="no" border_width_value_="0" border_style="solid" border_color="#000" div_padding_top="0" div_padding_bottom="0" div_padding_right="0" div_padding_left="0" ]',
       '[wr_column span="span4" ]',
       '[wr_widget widget_id="AgencyMenu"]widget-agency_menu%5B%5D%5Btitle%5D=[/wr_widget]',
       '[wr_widget widget_id="AgencyContact"]widget-agency_contact%5B%5D%5Btitle%5D=Contact[/wr_widget]',

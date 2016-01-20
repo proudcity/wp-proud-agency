@@ -16,16 +16,33 @@ class AgencyContact extends Core\ProudWidget {
   }
 
   /**
+   * Determines if content empty, show widget, title ect?  
+   *
+   * @see self::widget()
+   *
+   * @param array $args     Widget arguments.
+   * @param array $instance Saved values from database.
+   */
+  public function hasContent( $args, &$instance ) {
+    // Load hours
+    $instance['name'] = get_post_meta( get_the_ID(), 'name', true );
+    $instance['email'] = get_post_meta( get_the_ID(), 'email', true );
+    $instance['phone'] = get_post_meta( get_the_ID(), 'phone', true );
+    $instance['address'] = get_post_meta( get_the_ID(), 'address', true );
+    return !empty( $instance['name'] )  
+        || !empty( $instance['email'] )
+        || !empty( $instance['phone'] )
+        || !empty( $instance['address'] );
+  }
+
+  /**
    * Outputs the content of the widget
    *
    * @param array $args
    * @param array $instance
    */
   public function printWidget( $args, $instance ) {
-    $name = get_post_meta( get_the_ID(), 'name', true );
-    $email = get_post_meta( get_the_ID(), 'email', true );
-    $phone = get_post_meta( get_the_ID(), 'phone', true );
-    $address = get_post_meta( get_the_ID(), 'address', true );
+    extract( $instance );
     ?>
     <?php if($name): ?><div class="field-contact-name"><?php print esc_html($name) ?></div><?php endif; ?>
     <?php if($phone): ?><div class="field-contact-phone"><?php print esc_html($phone) ?></div><?php endif; ?>

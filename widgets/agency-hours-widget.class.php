@@ -16,6 +16,21 @@ class AgencyHours extends Core\ProudWidget {
   }
 
   /**
+   * Determines if content empty, show widget, title ect?  
+   *
+   * @see self::widget()
+   *
+   * @param array $args     Widget arguments.
+   * @param array $instance Saved values from database.
+   */
+  public function hasContent( $args, &$instance ) {
+    // Load hours
+    $instance['hours'] = get_post_meta( get_the_ID(), 'hours', true );
+    return !empty( $instance['hours'] );
+  }
+    
+
+  /**
    * Outputs the content of the widget
    *
    * @param array $args
@@ -23,7 +38,7 @@ class AgencyHours extends Core\ProudWidget {
    */
   public function printWidget( $args, $instance ) {
     ?>
-    <div class="field-hours"><?php print esc_html( get_post_meta( get_the_ID(), 'hours', true ) ) ?></div>
+    <div class="field-hours"><?php print esc_html($instance['hours']); ?></div>
     <?php
   }
 }
