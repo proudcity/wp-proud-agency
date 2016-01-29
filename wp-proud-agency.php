@@ -17,6 +17,11 @@ if ( ! class_exists( 'ProudPlugin' ) ) {
   require_once( plugin_dir_path(__FILE__) . '../wp-proud-core/proud-plugin.class.php' );
 }
 
+// We need the pagebuilder file for the default pagebuilder layout
+// @todo: Make this WORK!!
+// @todo: dont make this required, gracefully degrade
+//require_once( plugin_dir_path(__FILE__) . '../wp-proud-core/modules/so-pagebuilder/proud-so-pagebuilder.php' );
+
 class Agency extends \ProudPlugin {
   public function __construct() {
     parent::__construct( array(
@@ -34,7 +39,7 @@ class Agency extends \ProudPlugin {
     // @todo fix this???
     // add_action( 'save_post', 'my_project_updated_send_email' );
     add_filter( 'template_include', array($this, 'agency_template') );
-    add_filter( 'wp_insert_post_data' , array($this, 'add_agency_wr_code') , -10, 2 );
+    //add_filter( 'wp_insert_post_data' , array($this, 'add_agency_pagebulder_code') , -10, 2 );
   }
 
   // Init on plugins loaded
@@ -261,6 +266,7 @@ class Agency extends \ProudPlugin {
 
       <script>
         var isNewPost=<?php echo $isNew ?>;
+        var agency_panels = '<?php echo $this->agency_pagebuilder_code(); ?>';
         jQuery('#agency_section_meta_box').appendTo('#titlediv').css('margin-top', '1em');
         function changeType() {
           jQuery('#agency_url_wrapper, #post_menu_wrapper, #wr_editor_tabs, .wr-editor-tab-content').hide();
@@ -273,17 +279,16 @@ class Agency extends \ProudPlugin {
           }
           else if (type =='section') {
             jQuery('#post_menu_wrapper').show();
-            activateWR();
+            activatePagebuilder();
           }
           else if (type =='page') {
-            activateWR();
+            activatePagebuilder();
           }
         }
-        function activateWR(){
-          
-          if (!isNewPost) {
-            jQuery('#wr_editor_tabs, .wr-editor-tab-content').show();
-          }
+        function activatePagebuilder(){
+          console.log(agency_panels);
+          jQuery('input[name="panels_data"]').val(agency_panels);
+          jQuery('#content-panels').trigger('click');
         }
         changeType();
         jQuery('.agency_type').bind('click', changeType);
@@ -362,18 +367,17 @@ class Agency extends \ProudPlugin {
   /**
    * Adds the Woo Rockets code if none is set and this is a section.
    */
-  public function add_agency_wr_code( $data , $postarr ) {
+  /*public function add_agency_pagebulder_code( $data , $postarr ) {
     // Add default styles + content ?
-    if ('section' === $postarr['agency_type'] && !empty($postarr['ID']) && empty($data['post_content'])) {
-      // Hide page title + make full width
-      $_POST['proud_full_width'] = 'on';
-      $_POST['proud_hide_title'] = 'on';
-      // Let WR handle default content.
-      $_POST['shortcode_content'] = $this->agency_wr_code($data['post_title'], get_the_post_thumbnail_url($postarr['ID']));
-      $_POST['wr_active_tab'] = 1;
+    if ( ('section' === $postarr['agency_type'] || 'page' === $postarr['agency_type'])&& !empty($postarr['ID']) && empty($data['post_content'])) {
+      // @todo: get this from proud-so-pagebuilder.php (proud-core)
+      $code = $this->agency_pagebuilder_code();
+      update_post_meta( $postarr['ID'], 'panels_data', $code );
+      print_r($code);
+      print_r($postarr['ID']);
     }
     return $data;
-  }
+  }*/
 
    /**
    * Adds the Woo Rockets code if none is set and this is a section.
@@ -383,29 +387,141 @@ class Agency extends \ProudPlugin {
     wp_delete_nav_menu( $menu );
   }
 
-  /**
-   * Returns the default Woo Rockets code for agencies
-   */
-  private function agency_wr_code($title, $image) {
-    return [
-      '[wr_row width="full" background="none" border_width_value_="0" border_style="solid" border_color="#000" div_padding_top="0" div_padding_left="0" div_padding_bottom="0" div_padding_right="0" ]',
-      '[wr_column span="span12" ]',
-      '[wr_jumbotronheader div_margin_top="0" div_margin_left="0" div_margin_bottom="25" div_margin_right="0" include_title="no" background="image" image="'.$image.'" img_repeat="none" background_size="normal" paralax="no" make_inverse="no" box_background="none" disabled_el="no" ]<h1>'.$title.'</h1>[/wr_jumbotronheader]',
-      '[/wr_column]',
-      '[/wr_row]',
-      '[wr_row width="boxed" background="none" solid_color_value="#FFFFFF" solid_color_color="#ffffff" gradient_color="0% #FFFFFF,100% #000000" gradient_direction="vertical" repeat="full" img_repeat="full" autoplay="yes" position="center center" paralax="no" border_width_value_="0" border_style="solid" border_color="#000" div_padding_top="0" div_padding_bottom="0" div_padding_right="0" div_padding_left="0" ]',
-      '[wr_column span="span4" ]',
-      '[wr_widget widget_id="AgencyMenu"]widget-agency_menu%5B%5D%5Btitle%5D=[/wr_widget]',
-      '[wr_widget widget_id="AgencyContact"]widget-agency_contact%5B%5D%5Btitle%5D=Contact[/wr_widget]',
-      '[wr_widget widget_id="AgencySocial"]widget-agency_social%5B%5D%5Btitle%5D=Connect[/wr_widget]',
-      '[wr_widget widget_id="AgencyHours"]widget-agency_hours%5B%5D%5Btitle%5D=Hours[/wr_widget]',
-      '[/wr_column]',
-      '[wr_column span="span8" ]',
-      '[wr_text text_margin_top="0" text_margin_bottom="0" enable_dropcap="no" appearing_animation="0" disabled_el="no" ][/wr_text]',
-      '[/wr_column]',
-      '[/wr_row]'
-    ];
+  // @todo: get this from proud-so-pagebuilder.php (proud-core)
+  private function agency_pagebuilder_code() {
+    $code = array(
+      'name' => __('Agency home page', 'proud'),    
+      'description' => __('Agency header and sidebar with contact info', 'proud'),    // Optional
+      'widgets' => 
+      array (
+        0 => 
+        array (
+          'text' => '<h1>[title]</h1>',
+          'headertype' => 'header',
+          'background' => 'image',
+          'pattern' => '',
+          'repeat' => 'full',
+          'image' => '[featured-image]',
+          'make_inverse' => 'yes',
+          'panels_info' => 
+          array (
+            'class' => 'JumbotronHeader',
+            'grid' => 0,
+            'cell' => 0,
+            'id' => 0,
+          ),
+        ),
+        1 => 
+        array (
+          'title' => '',
+          'panels_info' => 
+          array (
+            'class' => 'AgencyMenu',
+            'raw' => false,
+            'grid' => 1,
+            'cell' => 0,
+            'id' => 1,
+          ),
+        ),
+        2 => 
+        array (
+          'title' => '',
+          'panels_info' => 
+          array (
+            'class' => 'AgencySocial',
+            'raw' => false,
+            'grid' => 1,
+            'cell' => 0,
+            'id' => 2,
+          ),
+        ),
+        3 => 
+        array (
+          'title' => 'Contact',
+          'panels_info' => 
+          array (
+            'class' => 'AgencyContact',
+            'raw' => false,
+            'grid' => 1,
+            'cell' => 0,
+            'id' => 3,
+          ),
+        ),
+        4 => 
+        array (
+          'title' => 'Hours',
+          'panels_info' => 
+          array (
+            'class' => 'AgencyHours',
+            'raw' => false,
+            'grid' => 1,
+            'cell' => 0,
+            'id' => 4,
+          ),
+        ),
+        5 => 
+          array (
+            'title' => '',
+            'text' => '',
+            'text_selected_editor' => 'tinymce',
+            'autop' => true,
+            '_sow_form_id' => '56ab38067a600',
+            'panels_info' => 
+            array (
+              'class' => 'SiteOrigin_Widget_Editor_Widget',
+              'grid' => 1,
+              'cell' => 1,
+              'id' => 5,
+              'style' => 
+              array (
+                'background_image_attachment' => false,
+                'background_display' => 'tile',
+              ),
+            ),
+          ),
+      ),
+      'grids' => 
+      array (
+        0 => 
+        array (
+          'cells' => 1,
+          'style' => 
+          array (
+            'row_stretch' => 'full',
+            'background_display' => 'tile',
+          ),
+        ),
+        1 => 
+        array (
+          'cells' => 2,
+          'style' => 
+          array (
+          ),
+        ),
+      ),
+      'grid_cells' => 
+      array (
+        0 => 
+        array (
+          'grid' => 0,
+          'weight' => 1,
+        ),
+        1 => 
+        array (
+          'grid' => 1,
+          'weight' => 0.33345145287029998,
+        ),
+        2 => 
+        array (
+          'grid' => 1,
+          'weight' => 0.66654854712970002,
+        ),
+      ),
+    );
+    
+    return json_encode($code);
   }
+
 
 } // class
 $Agency = new Agency;
