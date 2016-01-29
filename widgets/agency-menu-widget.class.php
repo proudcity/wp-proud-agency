@@ -47,10 +47,11 @@ class AgencyMenu extends Core\ProudWidget {
       }
       else {
         global $pageInfo;
-        $args = array(
+        /*$args = array(
           'menu' => $pageInfo['menu'],
           'menu_class' => 'nav nav-pills nav-stacked',          
-        );
+        );*/
+        $args['menu'] = $pageInfo['menu'];
         wp_nav_menu( $args );
       }
   }
