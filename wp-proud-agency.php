@@ -402,7 +402,7 @@ class Agency extends \ProudPlugin {
           'pattern' => '',
           'repeat' => 'full',
           'image' => '[featured-image]',
-          'make_inverse' => 'yes',
+          'make_inverse' => 'make_inverse',
           'panels_info' => 
           array (
             'class' => 'JumbotronHeader',
