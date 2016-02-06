@@ -47,8 +47,8 @@ class AgencyContact extends Core\ProudWidget {
     ?>
     <?php if($name): ?><p class="field-contact-name"><?php print esc_html($name) ?></p><?php endif; ?>
     <?php if($phone || $email): ?><p>
-      <?php if($phone): ?><p class="field-contact-phone"><a href="tel:<?php print esc_url($phone) ?>"><i class="fa fa-fw fa-phone"></i><?php print esc_html($phone) ?></a></p><?php endif; ?>
-      <?php if($email): ?><p class="field-contact-email"><a href="<?php print esc_url( "mailto:$email" ) ?>"><i class="fa fa-fw fa-envelope"></i><?php print esc_html( $email ) ?></a></p><?php endif; ?>
+      <?php if($phone): ?><div class="field-contact-phone"><a href="tel:<?php print esc_url($phone) ?>"><i class="fa fa-fw fa-phone"></i><?php print esc_html($phone) ?></a></div><?php endif; ?>
+      <?php if($email): ?><div class="field-contact-email"><a href="<?php print esc_url( "mailto:$email" ) ?>"><i class="fa fa-fw fa-envelope"></i><?php print esc_html( $email ) ?></a></div><?php endif; ?>
     </p><?php endif; ?>
     <?php if($address): ?><div class="field-contact-address"><?php print nl2br(esc_html($address)) ?></div><?php endif; ?>
     <?php
