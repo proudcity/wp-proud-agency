@@ -24,8 +24,10 @@ class AgencyHours extends Core\ProudWidget {
    * @param array $instance Saved values from database.
    */
   public function hasContent( $args, &$instance ) {
+    global $pageInfo;
+    $id = get_post_type() === 'agency' ? get_the_ID(): $pageInfo['parent_post'];
     // Load hours
-    $instance['hours'] = get_post_meta( get_the_ID(), 'hours', true );
+    $instance['hours'] = get_post_meta( $id, 'hours', true );
     return !empty( $instance['hours'] );
   }
     
@@ -38,7 +40,7 @@ class AgencyHours extends Core\ProudWidget {
    */
   public function printWidget( $args, $instance ) {
     ?>
-    <div class="field-hours"><?php print esc_html($instance['hours']); ?></div>
+    <div class="field-hours"><?php print nl2br(esc_html($instance['hours'])); ?></div>
     <?php
   }
 }
