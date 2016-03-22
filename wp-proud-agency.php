@@ -6,7 +6,7 @@ Description: Declares an Agency custom post type.
 Version: 1.0
 Author: ProudCity
 Author URI: http://proudcity.com/
-License: GPLv2
+License: Affero GPL v3
 */
 // @todo: use CMB2: https://github.com/WebDevStudios/CMB2 or https://github.com/humanmade/Custom-Meta-Boxes
 namespace Proud\Agency;
