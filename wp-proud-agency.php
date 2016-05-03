@@ -445,7 +445,7 @@ class Agency extends \ProudPlugin {
           ),
           2 => 
           array (
-            'title' => '',
+            'title' => 'Connect',
             'panels_info' => 
             array (
               'class' => 'AgencySocial',
@@ -564,7 +564,7 @@ class Agency extends \ProudPlugin {
           ),
           1 => 
           array (
-            'title' => '',
+            'title' => 'Connect',
             'panels_info' => 
             array (
               'class' => 'AgencySocial',
