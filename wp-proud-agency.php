@@ -323,7 +323,13 @@ class Agency extends \ProudPlugin {
       $type = $_POST['agency_type'];
       update_post_meta( $id, 'agency_type', $type );
       if ('external' === $type) {
-        update_post_meta( $id, 'url', esc_url($_POST['agency_url'] ));
+        $url = $_POST['agency_url'];
+        if ( empty($url) ) {
+          delete_post_meta( $id, 'url');
+        }
+        else {
+          update_post_meta( $id, 'url', esc_url( $url ));
+        }
       }
       else if ('section' === $type) {
         $menu = $_POST['post_menu'];
@@ -672,7 +678,8 @@ $Agency = new Agency;
 function get_agency_permalink($post = 0) {
   $post = $post > 0 ? $post : get_the_ID();
   $url = get_post_meta( $post, 'url', true );
-  if ( !empty($url) ) {
+
+  if ( get_post_meta( $post, 'agency_type', true ) === 'external' && !empty($url) ) {
     return esc_html( $url );
   }
   else {
