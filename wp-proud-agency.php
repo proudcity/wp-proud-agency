@@ -23,6 +23,9 @@ if ( ! class_exists( 'ProudPlugin' ) ) {
 //require_once( plugin_dir_path(__FILE__) . '../wp-proud-core/modules/so-pagebuilder/proud-so-pagebuilder.php' );
 
 class Agency extends \ProudPlugin {
+
+  static $key = 'agency_edit';
+
   public function __construct() {
     parent::__construct( array(
       'textdomain'     => 'wp-proud-agency',
@@ -136,7 +139,7 @@ class Agency extends \ProudPlugin {
   public function build_fields($id) {
     $this->fields = [];
 
-    $type = get_post_meta( $agency->ID, 'agency_type', true );
+    $type = get_post_meta( $id, 'agency_type', true );
     $type = $type ? $type : 'page';
     $this->fields['agency_type'] = [
       '#type' => 'radios',
@@ -156,7 +159,7 @@ class Agency extends \ProudPlugin {
       '#title' => __('URL'),
       '#description' => __('Enter the full URL to an existing site'),
       '#name' => 'agency_url',
-      '#value' => esc_url( get_post_meta( $agency->ID, 'url', true ) ),
+      '#value' => esc_url( get_post_meta( $id, 'url', true ) ),
       '#states' => [
         'visible' => [
           'agency_type' => [
@@ -178,7 +181,7 @@ class Agency extends \ProudPlugin {
     foreach ( $menus as $menu ) {
       $menuArray[$menu->slug] = $menu->name;
     }
-    $menu = get_post_meta( $agency->ID, 'post_menu', true );
+    $menu = get_post_meta( $id, 'post_menu', true );
     $menu = $menu ? $menu : 'new';
     $isNew = empty($agency->post_title) ? 1 : 0;
 
@@ -216,14 +219,14 @@ class Agency extends \ProudPlugin {
    */
   public function display_agency_section_meta_box( $agency ) {
     $this->build_fields($agency->ID);
-    $form = new \Proud\Core\FormHelper( $this->key, $this->fields );
+    $form = new \Proud\Core\FormHelper( self::$key, $this->fields );
     $form->printFields(); 
 
     // Add js settings
     global $proudcore;
     $proudcore->addJsSettings([
       'proud_agency' => [
-        'isNewPost' => $isNew,
+        'isNewPost' => empty($agency->post_title),
         'agency_panels' => [
           'section' => $this->agency_pagebuilder_code('section'),
           'page' => $this->agency_pagebuilder_code('page') // @TODO change to page + figure out how to update on click 
@@ -554,6 +557,9 @@ $Agency = new Agency;
  * Add the Social networks metabox
  */
 class AgencyContact extends \ProudPlugin {
+
+  static $key = 'agency_contact';
+
   public function __construct() {
     parent::__construct( array(
       'textdomain'     => 'wp-proud-agency',
@@ -617,7 +623,7 @@ class AgencyContact extends \ProudPlugin {
 
   public function display_agency_contact_meta_box( $agency ) {
     $this->build_fields($agency->ID);
-    $form = new \Proud\Core\FormHelper( $this->key, $this->fields );
+    $form = new \Proud\Core\FormHelper( self::$key, $this->fields );
     $form->printFields();
   }
 
@@ -644,6 +650,9 @@ new AgencyContact;
  * Add the Social networks metabox
  */
 class AgencySocial extends \ProudPlugin {
+  
+  static $key = 'agency_social';
+
   public function __construct() {
     parent::__construct( array(
       'textdomain'     => 'wp-proud-agency',
@@ -692,7 +701,7 @@ class AgencySocial extends \ProudPlugin {
 
   public function display_agency_social_meta_box( $agency ) {
     $this->build_fields($agency->ID);
-    $form = new \Proud\Core\FormHelper( $this->key, $this->fields );
+    $form = new \Proud\Core\FormHelper( self::$key, $this->fields );
     $form->printFields();
   }
 
