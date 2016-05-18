@@ -33,14 +33,8 @@ class Agency extends \ProudPlugin {
     $this->hook( 'admin_enqueue_scripts', 'agency_assets' );
     $this->hook( 'plugins_loaded', 'agency_init_widgets' );
     $this->hook( 'save_post', 'add_agency_section_fields', 10, 2 );
-    $this->hook( 'save_post', 'add_agency_social_fields', 10, 2 );
-    $this->hook( 'save_post', 'add_agency_contact_fields', 10, 2 );
     $this->hook( 'rest_api_init', 'agency_rest_support' );
     $this->hook( 'before_delete_post', 'delete_agency_menu' );
-    // @todo fix this???
-    // add_action( 'save_post', 'my_project_updated_send_email' );
-    add_filter( 'template_include', array($this, 'agency_template') );
-    //add_filter( 'wp_insert_post_data' , array($this, 'add_agency_pagebulder_code') , -10, 2 );
   }
 
   //add assets
@@ -55,27 +49,6 @@ class Agency extends \ProudPlugin {
     require_once plugin_dir_path(__FILE__) . '/widgets/agency-hours-widget.class.php';
     require_once plugin_dir_path(__FILE__) . '/widgets/agency-social-links-widget.class.php';
     require_once plugin_dir_path(__FILE__) . '/widgets/agency-menu-widget.class.php';
-  }
-
-  public function agency_template( $template_path ) {
-      if ( get_post_type() == 'agency' ) {
-          if ( is_single() ) {
-              // We use the default post template here since we're just going to override it with Page Builder
-              /*if ( $theme_file = locate_template( array ( 'content-agency.php' ) ) ) {
-                  $template_path = $theme_file;
-              } else {
-                  $template_path = plugin_dir_path( __FILE__ ) . '/single-agency.php';
-              }*/
-          }
-          /*elseif ( is_archive() ) {
-              if ( $theme_file = locate_template( array ( 'loop-agency.php' ) ) ) {
-                  $template_path = $theme_file;
-              } else {
-                  $template_path = plugin_dir_path( __FILE__ ) . '/archive-agency.php';
-              }
-          }*/
-      }
-      return $template_path;
   }
 
   public function create_agency() {
@@ -124,16 +97,6 @@ class Agency extends \ProudPlugin {
       array($this, 'display_agency_section_meta_box'),
       'agency', 'normal', 'high'
     );
-    add_meta_box( 'agency_social_meta_box',
-      'Social Media Accounts',
-      array($this, 'display_agency_social_meta_box'),
-      'agency', 'normal', 'high'
-    );
-    add_meta_box( 'agency_contact_meta_box',
-      'Contact information',
-      array($this, 'display_agency_contact_meta_box'),
-      'agency', 'normal', 'high'
-    );
     
     // @todo: see if we can move the editor below the fields (at least agency type?)
     // See: https://wordpress.org/support/topic/move-custom-meta-box-above-editor
@@ -169,69 +132,41 @@ class Agency extends \ProudPlugin {
       return $return;
   }
 
-  public function agency_social_services() {
-    return array(
-      'facebook' => 'http://facebook.com/pages/',
-      'twitter' => 'http://twitter.com/',
-      'instagram' => 'http://instagram.com/',
-      'youtube' => 'http://youtube.com/',
-      'rss' => 'Enter url to RSS news feed',
-      'ical' => 'Enter url to iCal calendar feed',
-    );
-  }
 
-  public function agency_contact_fields() {
-    return array(
-      'name' => 'Contact name',
-      'email' => 'Contact email',
-      'phone' => '123-456-7890',
-      'address' => 'Physical address',
-      'hours' => "Sunday: Closed\r\nMonday: 9:30am - 9:00pm\r\nTuesday: 9:00am - 5:00pm",
-    );
-  }
+  public function build_fields($id) {
+    $this->fields = [];
 
-  public function display_agency_social_meta_box( $agency ) {
-    foreach ($this->agency_social_services() as $service => $label) {
-      $value = esc_html( get_post_meta( $agency->ID, 'social_'.$service, true ) );
-      ?>
-      <div class="field-group">
-        <label><?php print ucfirst($service); ?>:</label>
-        <input type="textfield" name="agency_social_<?php print $service; ?>" value="<?php print $value; ?>" placeholder="<?php print $label; ?>" />
-      </div>
-      <?php
-    }
-  }
+    $type = get_post_meta( $agency->ID, 'agency_type', true );
+    $type = $type ? $type : 'page';
+    $this->fields['agency_type'] = [
+      '#type' => 'radios',
+      '#title' => __('Type'),
+      //'#description' => __('The type of search to fallback on when users don\'t find what they\'re looking for in the autosuggest search and make a full site search.', 'proud-settings'),
+      '#name' => 'agency_type',
+      '#options' => array(
+        'page' => __('Single page', 'proud'),
+        'external' => __('External link', 'proud'),
+        'section' => __('Section', 'proud'),
+      ),
+      '#value' => $type,
+    ];
 
-  public function display_agency_contact_meta_box( $agency ) {
-    foreach ($this->agency_contact_fields() as $key => $label) {
-      $value = esc_html( get_post_meta( $agency->ID, $key, true ) );
-      ?>
-      <div class="field-group">
-        <label><?php print ucfirst($key); ?>:</label>
-        <?php if ($key == 'hours') { ?>
-          <textarea rows="5" name="agency_<?php print $key; ?>" placeholder="<?php print $label; ?>"><?php print $value; ?></textarea><br/>
-          <div class="description">Format: Monday: 9:30am - 9:00pm</div>
-        <?php } elseif ('address' == $key) { ?>
-          <textarea rows="2" name="agency_<?php print $key; ?>" placeholder="<?php print $label; ?>"><?php print $value; ?></textarea><br/>
-        <?php } else { ?>
-          <input type="textfield" name="agency_<?php print $key; ?>" value="<?php print $value; ?>" placeholder="<?php print $label; ?>" />
-        <?php } ?>
-      </div>
-      <?php
-    }
-  }
-
-  /**
-   * Displays the Agency Type metadata fieldset.
-   */
-  public function display_agency_section_meta_box( $agency ) {
-    //if ( !empty($agency->post_title) && empty($agency->post_content) ) {
-    //  $agency->post_content = $this->agency_wr_code( $data['post_title'], get_the_post_thumbnail_url($post_id) );
-    //  update_post_meta( $agency->ID, '_wr_page_builder_content', $data['post_content'] );
-    //  update_post_meta( $agency->ID, '_wr_page_active_tab', 1 );
-    //  update_post_meta( $agency->ID, '_wr_deactivate_pb', 0 );
-    //}
-    //update_post_meta( $agency->ID, '_wr_page_active_tab', 1 );
+    $this->fields['agency_url'] = [
+      '#type' => 'text',
+      '#title' => __('URL'),
+      '#description' => __('Enter the full URL to an existing site'),
+      '#name' => 'agency_url',
+      '#value' => esc_url( get_post_meta( $agency->ID, 'url', true ) ),
+      '#states' => [
+        'visible' => [
+          'agency_type' => [
+            'operator' => '==',
+            'value' => ['external'],
+            'glue' => '||'
+          ],
+        ],
+      ],
+    ];
 
     $menus = get_registered_nav_menus();
     $menus = get_terms( 'nav_menu', array( 'hide_empty' => false ) );
@@ -243,12 +178,46 @@ class Agency extends \ProudPlugin {
     foreach ( $menus as $menu ) {
       $menuArray[$menu->slug] = $menu->name;
     }
-
-    $type = get_post_meta( $agency->ID, 'agency_type', true );
-    $type = $type ? $type : 'page';
     $menu = get_post_meta( $agency->ID, 'post_menu', true );
     $menu = $menu ? $menu : 'new';
     $isNew = empty($agency->post_title) ? 1 : 0;
+
+    $this->fields['post_menu'] = [
+      '#type' => 'select',
+      '#title' => __('Menu'),
+      //'#description' => __('Enter the full url to the payment page'),
+      '#name' => 'post_menu',
+      '#options' => $menuArray,
+      '#value' => $menu,
+      '#states' => [
+        'visible' => [
+          'agency_type' => [
+            'operator' => '==',
+            'value' => ['section'],
+            'glue' => '||'
+          ],
+        ],
+      ],
+    ];
+
+    $this->fields['agency_icon'] = [
+      '#type' => 'fa-icon',
+      '#title' => __('Icon'),
+      '#description' => __('Select the icon to use in for the icon button display style'),
+      '#name' => 'agency_icon',
+      '#value' => get_post_meta( $id, 'agency_icon', true ),
+    ];
+
+    return $this->fields;
+  }
+
+  /**
+   * Displays the Agency Type metadata fieldset.
+   */
+  public function display_agency_section_meta_box( $agency ) {
+    $this->build_fields($agency->ID);
+    $form = new \Proud\Core\FormHelper( $this->key, $this->fields );
+    $form->printFields(); 
 
     // Add js settings
     global $proudcore;
@@ -261,59 +230,22 @@ class Agency extends \ProudPlugin {
         ]
       ]
     ]);
-
-    $types = [
-      'page' => __('Single page', 'proud'),
-      'external' => __('External link', 'proud'),
-      'section' => __('Section', 'proud'),
-    ];
-
-    ?>
-    <?php if( !$isNew ): ?>
-      <p style="margin-top: .5em;">
-        Agency type: <strong><?php echo $types[$type]; ?></strong> <a data-toggle="collapse" href="#collapse-type" aria-expanded="false" aria-controls="collapse-type">Change</a>
-      </p>
-      <div class="collapse" id="collapse-type">
-        <label>Change type:</label>
-    <?php else: ?>
-      <div class="agency-type">
-        <label style="margin-top: .5em;">Agency type:</label>
-    <?php endif;?>
-        <div class="checkboxes">
-          <div><label>
-            <input type="radio" name="agency_type" class="agency_type" value="page" <?php if('page' === $type) { echo 'checked="checked"'; } ?>/>
-            <?php echo $types['page'] ?>
-          </label></div>
-          <div><label>
-            <input type="radio" name="agency_type" class="agency_type" value="external" <?php if('external' === $type) { echo 'checked="checked"'; } ?>/>
-            <?php echo $types['external'] ?>
-          </label></div>
-          <div><label>
-            <input type="radio" name="agency_type" class="agency_type" value="section" <?php if('section' === $type) { echo 'checked="checked"'; } ?>/>
-            <?php echo $types['section'] ?>
-          </label></div>
-        </div>
-      </div>
-
-      <div id="agency_url_wrapper" class="field-group">
-        <label>Url:</label>
-        <input type="text" name="agency_url" placeholder="Enter the full URL to an existing site" value="<?php echo esc_url( get_post_meta( $agency->ID, 'url', true ) ) ?>" />
-      </div>
-
-      <div id="post_menu_wrapper">
-        <label>Menu: </label>
-        <select name="post_menu">
-          <?php foreach($menuArray as $key => $item) { ?>
-            <option value="<?php echo $key ?>" <?php if ($key === $menu) { echo 'selected="selected"'; } ?>><?php echo $item ?></option>
-          <?php } ?>
-        </select>
-      </div>
-
-      <script>
-
-      </script>
-    <?php
   }
+
+
+  /**
+   * Saves contact metadata fields 
+   */
+  /*public function add_payment_fields( $id, $payment ) {
+    if ( $payment->post_type == 'payment' ) {
+      foreach ($this->build_fields($id) as $key => $field) {
+        if ( !empty( $_POST[$key] ) ) {  // @todo: check if it has been set already to allow clearing of value
+          update_post_meta( $id, $key, $_POST[$key] );
+        }
+      }
+    }
+  }*/
+
 
   /**
    * Saves social metadata fields and saves/creates the menu
@@ -346,66 +278,10 @@ class Agency extends \ProudPlugin {
   }
 
 
-  /**
-   * Saves social metadata fields 
-   */
-  public function add_agency_social_fields( $id, $agency ) {
-    if ( $agency->post_type == 'agency' ) {
-      foreach ($this->agency_social_services() as $service => $label) {
-        $field = 'social_'.$service;
-        $old = get_post_meta( $id, $field, true );
-        $new = !empty( $_POST['agency_social_' . $service] ) ? $_POST['agency_social_' . $service] : null;
-        if( !is_null( $old ) ){
-          if ( is_null( $new ) ){
-            delete_post_meta( $id, $field );
-          } else {
-            update_post_meta( $id, $field, $new, $old );
-          }
-        } elseif ( !is_null( $new ) ){
-          add_post_meta( $id, $field, $new, true );
-        }
-      }
-    }
-  }
 
-  /**
-   * Saves contact metadata fields 
-   */
-  public function add_agency_contact_fields( $id, $agency ) {
-    if ( $agency->post_type == 'agency' ) {
-      foreach ($this->agency_contact_fields() as $field => $label) {
-          $old = get_post_meta( $id, $field, true );
-          $new = !empty( $_POST['agency_' . $field] ) ? $_POST['agency_' . $field] : null;
-          if( !is_null( $old ) ){
-            if ( is_null( $new ) ){
-              delete_post_meta( $id, $field );
-            } else {
-              update_post_meta( $id, $field, $new, $old );
-            }
-          } elseif ( !is_null( $new ) ){
-            add_post_meta( $id, $field, $new, true );
-          }
-      }
-    }
-  }
-
-  /**
-   * Adds the Woo Rockets code if none is set and this is a section.
-   */
-  /*public function add_agency_pagebulder_code( $data , $postarr ) {
-    // Add default styles + content ?
-    if ( ('section' === $postarr['agency_type'] || 'page' === $postarr['agency_type'])&& !empty($postarr['ID']) && empty($data['post_content'])) {
-      // @todo: get this from proud-so-pagebuilder.php (proud-core)
-      $code = $this->agency_pagebuilder_code();
-      update_post_meta( $postarr['ID'], 'panels_data', $code );
-      print_r($code);
-      print_r($postarr['ID']);
-    }
-    return $data;
-  }*/
 
    /**
-   * Adds the Woo Rockets code if none is set and this is a section.
+   * Delete menu when agency is deleted.
    */
   public function delete_agency_menu( $post_id ) {
     $menu = get_post_meta( $post_id, 'post_menu' );
@@ -670,6 +546,190 @@ class Agency extends \ProudPlugin {
 
 } // class
 $Agency = new Agency;
+
+
+
+
+/**
+ * Add the Social networks metabox
+ */
+class AgencyContact extends \ProudPlugin {
+  public function __construct() {
+    parent::__construct( array(
+      'textdomain'     => 'wp-proud-agency',
+      'plugin_path'    => __FILE__,
+    ) );
+   
+    $this->hook( 'save_post', 'add_agency_contact_fields', 10, 2 );
+    $this->hook( 'admin_init', 'agency_contact_admin' );
+
+  }
+
+  public function agency_contact_admin() {
+    add_meta_box( 'agency_contact_meta_box',
+      'Contact information',
+      array($this, 'display_agency_contact_meta_box'),
+      'agency', 'normal', 'high'
+    );
+  }
+
+  public function build_fields($id) {
+    $this->fields = [];
+
+    $this->fields['agency_name'] = [
+      '#type' => 'text',
+      '#title' => __( 'Contact name' ),
+      '#name' => 'agency_name',
+      '#value' => esc_html( get_post_meta( $id, 'agency_name', true ) ),
+    ];
+
+    $this->fields['agency_email'] = [
+      '#type' => 'text',
+      '#title' => __( 'Contact email' ),
+      '#name' => 'agency_email',
+      '#value' => esc_html( get_post_meta( $id, 'agency_email', true ) ),
+    ];
+
+    $this->fields['agency_phone'] = [
+      '#type' => 'text',
+      '#title' => __( 'Contact phone' ),
+      '#name' => 'agency_phone',
+      '#value' => esc_html( get_post_meta( $id, 'agency_phone', true ) ),
+    ];
+
+    $this->fields['agency_address'] = [
+      '#type' => 'textarea',
+      '#title' => __( 'Contact address' ),
+      '#name' => 'agency_address',
+      '#value' => esc_html( get_post_meta( $id, 'agency_address', true ) ),
+    ];
+
+    $this->fields['agency_hours'] = [
+      '#type' => 'textarea',
+      '#title' => __( 'Contact hours' ),
+      '#name' => 'agency_hours',
+      '#placeholder' => __( 'Sunday: Closed\r\nMonday: 9:30am - 9:00pm\r\nTuesday: 9:00am - 5:00pm' ),
+      '#value' => esc_html( get_post_meta( $id, 'agency_hours', true ) ),
+    ];
+
+    return $this->fields;
+  }
+
+  public function display_agency_contact_meta_box( $agency ) {
+    $this->build_fields($agency->ID);
+    $form = new \Proud\Core\FormHelper( $this->key, $this->fields );
+    $form->printFields();
+  }
+
+  /**
+   * Saves contact metadata fields 
+   */
+  public function add_agency_contact_fields( $id, $agency ) {
+    if ( $agency->post_type == 'agency' ) {
+      foreach ($this->build_fields($id) as $key => $field) {
+        
+        if ( !empty( $_POST[$key] ) ) {  // @todo: check if it has been set already to allow clearing of value
+          update_post_meta( $id, $key, $_POST[$key] );
+        }
+      }
+    }
+  }
+
+}
+new AgencyContact;
+
+
+
+/**
+ * Add the Social networks metabox
+ */
+class AgencySocial extends \ProudPlugin {
+  public function __construct() {
+    parent::__construct( array(
+      'textdomain'     => 'wp-proud-agency',
+      'plugin_path'    => __FILE__,
+    ) );
+   
+    $this->hook( 'save_post', 'add_agency_social_fields', 10, 2 );
+    $this->hook( 'admin_init', 'agency_social_admin' );
+
+  }
+
+  public function agency_social_admin() {
+    add_meta_box( 'agency_social_meta_box',
+      'Social Media Accounts',
+      array($this, 'display_agency_social_meta_box'),
+      'agency', 'normal', 'high'
+    );
+  }
+
+  
+  public function agency_social_services() {
+    return array(
+      'facebook' => 'http://facebook.com/pages/',
+      'twitter' => 'http://twitter.com/',
+      'instagram' => 'http://instagram.com/',
+      'youtube' => 'http://youtube.com/',
+      'rss' => 'Enter url to RSS news feed',
+      'ical' => 'Enter url to iCal calendar feed',
+    );
+  }
+
+  public function build_fields($id) {
+    $this->fields = [];
+
+    foreach ($this->agency_social_services() as $service => $label) {
+      $this->fields['social_' . $service] = [
+        '#type' => 'text',
+        '#title' => __( ucfirst($service) ),
+        '#name' => 'social_' . $service,
+        '#value' => esc_html( get_post_meta( $id, 'social_' . $service, true ) ),
+      ];
+    }
+
+    return $this->fields;
+  }
+
+  public function display_agency_social_meta_box( $agency ) {
+    $this->build_fields($agency->ID);
+    $form = new \Proud\Core\FormHelper( $this->key, $this->fields );
+    $form->printFields();
+  }
+
+  /**
+   * Saves contact metadata fields 
+   */
+  public function add_agency_social_fields( $id, $agency ) {
+    if ( $agency->post_type == 'agency' ) {
+      foreach ($this->build_fields($id) as $key => $field) {
+        if ( !empty( $_POST[$key] ) ) {  // @todo: check if it has been set already to allow clearing of value
+          update_post_meta( $id, $key, $_POST[$key] );
+        }
+      }
+    }
+  }
+  // @todo: do we want smarter saving logic?
+  /*public function add_agency_social_fields( $id, $agency ) {
+    if ( $agency->post_type == 'agency' ) {
+      foreach ($this->agency_social_services() as $service => $label) {
+        $field = 'social_'.$service;
+        $old = get_post_meta( $id, $field, true );
+        $new = !empty( $_POST['agency_social_' . $service] ) ? $_POST['agency_social_' . $service] : null;
+        if( !is_null( $old ) ){
+          if ( is_null( $new ) ){
+            delete_post_meta( $id, $field );
+          } else {
+            update_post_meta( $id, $field, $new, $old );
+          }
+        } elseif ( !is_null( $new ) ){
+          add_post_meta( $id, $field, $new, true );
+        }
+      }
+    }
+  }*/
+
+}
+new AgencySocial;
 
 
 /**
