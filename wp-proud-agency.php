@@ -277,6 +277,8 @@ class Agency extends \ProudPlugin {
           update_post_meta( $id, 'post_menu', $menu );
         }
       }
+
+      update_post_meta( $id, 'agency_icon', $_POST['agency_icon']);
     }
   }
 
