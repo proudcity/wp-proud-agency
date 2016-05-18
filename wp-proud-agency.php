@@ -206,7 +206,7 @@ class Agency extends \ProudPlugin {
     $this->fields['agency_icon'] = [
       '#type' => 'fa-icon',
       '#title' => __('Icon'),
-      '#description' => __('Select the icon to use in for the icon button display style'),
+      '#description' => __('If you are using the Icon Button list style, select an icon'),
       '#name' => 'agency_icon',
       '#value' => get_post_meta( $id, 'agency_icon', true ),
     ];
@@ -616,7 +616,7 @@ class AgencyContact extends \ProudPlugin {
       '#type' => 'textarea',
       '#title' => __( 'Contact hours' ),
       '#name' => 'agency_hours',
-      '#placeholder' => __( 'Sunday: Closed\r\nMonday: 9:30am - 9:00pm\r\nTuesday: 9:00am - 5:00pm' ),
+      '#description' => __( 'Example:<Br/>Sunday: Closed<Br/>Monday: 9:30am - 9:00pm<Br/>Tuesday: 9:00am - 5:00pm' ),
       '#value' => esc_html( get_post_meta( $id, 'agency_hours', true ) ),
     ];
 
