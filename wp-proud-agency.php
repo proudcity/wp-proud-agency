@@ -584,40 +584,40 @@ class AgencyContact extends \ProudPlugin {
   public function build_fields($id) {
     $this->fields = [];
 
-    $this->fields['agency_name'] = [
+    $this->fields['name'] = [
       '#type' => 'text',
       '#title' => __( 'Contact name' ),
-      '#name' => 'agency_name',
-      '#value' => esc_html( get_post_meta( $id, 'agency_name', true ) ),
+      '#name' => 'name',
+      '#value' => esc_html( get_post_meta( $id, 'name', true ) ),
     ];
 
-    $this->fields['agency_email'] = [
+    $this->fields['email'] = [
       '#type' => 'text',
       '#title' => __( 'Contact email' ),
-      '#name' => 'agency_email',
-      '#value' => esc_html( get_post_meta( $id, 'agency_email', true ) ),
+      '#name' => 'email',
+      '#value' => esc_html( get_post_meta( $id, 'email', true ) ),
     ];
 
-    $this->fields['agency_phone'] = [
+    $this->fields['phone'] = [
       '#type' => 'text',
       '#title' => __( 'Contact phone' ),
-      '#name' => 'agency_phone',
-      '#value' => esc_html( get_post_meta( $id, 'agency_phone', true ) ),
+      '#name' => 'phone',
+      '#value' => esc_html( get_post_meta( $id, 'phone', true ) ),
     ];
 
-    $this->fields['agency_address'] = [
+    $this->fields['address'] = [
       '#type' => 'textarea',
       '#title' => __( 'Contact address' ),
-      '#name' => 'agency_address',
-      '#value' => esc_html( get_post_meta( $id, 'agency_address', true ) ),
+      '#name' => 'address',
+      '#value' => esc_html( get_post_meta( $id, 'address', true ) ),
     ];
 
-    $this->fields['agency_hours'] = [
+    $this->fields['hours'] = [
       '#type' => 'textarea',
       '#title' => __( 'Contact hours' ),
-      '#name' => 'agency_hours',
+      '#name' => 'hours',
       '#description' => __( 'Example:<Br/>Sunday: Closed<Br/>Monday: 9:30am - 9:00pm<Br/>Tuesday: 9:00am - 5:00pm' ),
-      '#value' => esc_html( get_post_meta( $id, 'agency_hours', true ) ),
+      '#value' => esc_html( get_post_meta( $id, 'hours', true ) ),
     ];
 
     return $this->fields;
