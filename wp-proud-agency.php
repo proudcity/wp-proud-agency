@@ -605,6 +605,13 @@ class AgencyContact extends \ProudPlugin {
       '#value' => esc_html( get_post_meta( $id, 'phone', true ) ),
     ];
 
+    $this->fields['fax'] = [
+      '#type' => 'text',
+      '#title' => __( 'Contact FAX' ),
+      '#name' => 'fax',
+      '#value' => esc_html( get_post_meta( $id, 'fax', true ) ),
+    ];
+
     $this->fields['address'] = [
       '#type' => 'textarea',
       '#title' => __( 'Contact address' ),
@@ -635,8 +642,7 @@ class AgencyContact extends \ProudPlugin {
   public function add_agency_contact_fields( $id, $agency ) {
     if ( $agency->post_type == 'agency' ) {
       foreach ($this->build_fields($id) as $key => $field) {
-        
-        if ( !empty( $_POST[$key] ) ) {  // @todo: check if it has been set already to allow clearing of value
+        if ( !empty( $_POST[$key] ) || !empty( $field['#value'] ) ) { 
           update_post_meta( $id, $key, $_POST[$key] );
         }
       }
@@ -713,7 +719,7 @@ class AgencySocial extends \ProudPlugin {
   public function add_agency_social_fields( $id, $agency ) {
     if ( $agency->post_type == 'agency' ) {
       foreach ($this->build_fields($id) as $key => $field) {
-        if ( !empty( $_POST[$key] ) ) {  // @todo: check if it has been set already to allow clearing of value
+        if ( !empty( $_POST[$key] ) || !empty( $field['#value'] ) ) { 
           update_post_meta( $id, $key, $_POST[$key] );
         }
       }
