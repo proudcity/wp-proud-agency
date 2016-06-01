@@ -17,12 +17,12 @@
         //if (isNewPost) {
         //  window.setTimeout(function(){$('#wr_editor_tabs a[href="#wr_editor_tab2"]').trigger('click');}, 1000);
         //}
-        var type = $('input.agency_type:checked').val();
+        var type = $('input[name=agency_type]:checked').val();
+        console.log(type);
         if (type == 'external') {
-          $('#agency_url_wrapper').show();
+          $('#so-panels-panels').hide();
         }
         else if (type =='section') {
-          $('#post_menu_wrapper').show();
           activatePagebuilder('section');
         }
         else if (type =='page') {
@@ -30,6 +30,8 @@
         }
       }
       function activatePagebuilder(type){
+        console.log(type);
+        console.log(settings);
         // New post so process (otherwise let site-origin handle)
         if(settings.isNewPost) {
           $('input[name="panels_data"]').val(settings.agency_panels[type]);
@@ -40,7 +42,7 @@
         }
       }
       changeType();
-      $('.agency_type').bind('click', changeType);
+      $('input[name=agency_type]').bind('click', changeType);
     }
   };
 })(jQuery, Proud);
