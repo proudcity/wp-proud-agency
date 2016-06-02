@@ -18,7 +18,6 @@
         //  window.setTimeout(function(){$('#wr_editor_tabs a[href="#wr_editor_tab2"]').trigger('click');}, 1000);
         //}
         var type = $('input[name=agency_type]:checked').val();
-        console.log(type);
         if (type == 'external') {
           $('#so-panels-panels').hide();
         }
@@ -30,8 +29,6 @@
         }
       }
       function activatePagebuilder(type){
-        console.log(type);
-        console.log(settings);
         // New post so process (otherwise let site-origin handle)
         if(settings.isNewPost) {
           $('input[name="panels_data"]').val(settings.agency_panels[type]);
