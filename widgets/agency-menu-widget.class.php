@@ -41,18 +41,17 @@ class AgencyMenu extends Core\ProudWidget {
       );
       if ('agency' === get_post_type()) {
           if ( $menu = get_post_meta( get_the_ID(), 'post_menu', true ) ) {
-              $args['menu'] = $menu;
-              wp_nav_menu( $args );
+              $instance['menu_class'] = new Core\ProudMenu($menu);
           }
       }
       else {
         global $pageInfo;
-        /*$args = array(
-          'menu' => $pageInfo['menu'],
-          'menu_class' => 'nav nav-pills nav-stacked',          
-        );*/
-        $args['menu'] = $pageInfo['menu'];
-        wp_nav_menu( $args );
+        $menu = $pageInfo['menu'];
+        $instance['menu_class'] = new Core\ProudMenu($menu);
+      }
+
+      if( !empty( $instance['menu_class'] ) ) {
+        $instance['menu_class']->print_menu();
       }
   }
 }
