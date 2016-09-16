@@ -593,7 +593,7 @@ class AgencyContact extends \ProudPlugin {
 
     $this->fields['email'] = [
       '#type' => 'text',
-      '#title' => __( 'Contact email' ),
+      '#title' => __( 'Contact email or form' ),
       '#name' => 'email',
       '#value' => esc_html( get_post_meta( $id, 'email', true ) ),
     ];
