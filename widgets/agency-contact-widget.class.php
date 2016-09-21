@@ -50,7 +50,13 @@ class AgencyContact extends Core\ProudWidget {
     <?php if($phone || $email): ?><p>
       <?php if($phone): ?><div class="field-contact-phone"><a href="tel:<?php print esc_url($phone) ?>"><i class="fa fa-fw fa-phone"></i><?php print esc_html($phone) ?></a></div><?php endif; ?>
       <?php if($fax): ?><div class="field-contact-fax"><a href="tel:<?php print esc_url($fax) ?>"><i class="fa fa-fw fa-fax"></i><?php print esc_html($fax) ?></a></div><?php endif; ?>
-      <?php if($email): ?><div class="field-contact-email"><a href="<?php print esc_url( "mailto:$email" ) ?>"><i class="fa fa-fw fa-envelope"></i><?php print esc_html( $email ) ?></a></div><?php endif; ?>
+      <?php if($email): ?>
+        <?php if(filter_var( $email, FILTER_VALIDATE_EMAIL ) ): ?>
+          <div class="field-contact-email"><a href="<?php print esc_url( "mailto:$email" ) ?>"><i class="fa fa-fw fa-envelope"></i><?php print esc_html( $email ) ?></a></div>
+        <?php else: ?>
+            <div class="field-contact-email"><a href="<?php print esc_url( "$email" ) ?>"><i class="fa fa-fw fa-external-link"></i><?php print __('Contact us', 'wp-proud-agency') ?></a></div>
+        <?php endif; ?>
+      <?php endif; ?>
     </p><?php endif; ?>
     <?php if($address): ?><div class="field-contact-address"><?php print nl2br(esc_html($address)) ?></div><?php endif; ?>
     <?php
