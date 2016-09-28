@@ -139,6 +139,14 @@ class Agency extends \ProudPlugin {
   public function build_fields($id) {
     $this->fields = [];
 
+    $this->fields['agency_list_exclude'] = [
+      '#type' => 'checkbox',
+      '#title' => __('Exclude from Agency Lists'),
+      '#description' => __('Checking this box will cause this Agency to be hidden on the Government page'),
+      '#name' => 'agency_list_exclude',
+      '#value' => get_post_meta( $id, 'agency_list_exclude', true ) !== false,
+    ];
+
     $type = get_post_meta( $id, 'agency_type', true );
     $type = $type ? $type : 'page';
     $this->fields['agency_type'] = [
