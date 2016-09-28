@@ -137,15 +137,7 @@ class Agency extends \ProudPlugin {
 
 
   public function build_fields($id) {
-    $this->fields = [];
-
-    $this->fields['agency_list_exclude'] = [
-      '#type' => 'checkbox',
-      '#title' => __('Exclude from Agency Lists'),
-      '#description' => __('Checking this box will cause this Agency to be hidden on the Government page'),
-      '#name' => 'agency_list_exclude',
-      '#value' => get_post_meta( $id, 'agency_list_exclude', true ) !== false,
-    ];
+    $this->fields = [];  
 
     $type = get_post_meta( $id, 'agency_type', true );
     $type = $type ? $type : 'page';
@@ -219,6 +211,15 @@ class Agency extends \ProudPlugin {
       '#value' => get_post_meta( $id, 'agency_icon', true ),
     ];
 
+    $this->fields['list_exclude'] = [
+      '#type' => 'checkbox',
+      '#title' => __('Exclude from '. _x( 'Agency', 'post type singular name', 'wp-agency' ) .' Lists'),
+      '#description' => __('Checking this box will cause this '. _x( 'Agency', 'post type singular name', 'wp-agency' ) .' to be hidden on the Government page'),
+      '#name' => 'list_exclude',
+      '#return_value' => '1',
+      '#value' => get_post_meta( $id, 'list_exclude', true ),
+    ];
+
     return $this->fields;
   }
 
@@ -287,6 +288,7 @@ class Agency extends \ProudPlugin {
       }
 
       update_post_meta( $id, 'agency_icon', $_POST['agency_icon']);
+      update_post_meta( $id, 'list_exclude', $_POST['list_exclude'] ? 1 : 0);
     }
   }
 
