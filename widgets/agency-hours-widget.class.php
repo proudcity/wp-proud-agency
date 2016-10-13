@@ -40,7 +40,10 @@ class AgencyHours extends Core\ProudWidget {
    */
   public function printWidget( $args, $instance ) {
     ?>
-    <div class="field-hours"><?php print nl2br(esc_html($instance['hours'])); ?></div>
+    <div class="row field-hours">
+      <div class="col-xs-2"><i class="fa fa-clock-o fa-2x text-muted"></i></div>
+      <div class="col-xs-10"><?php print nl2br(esc_html($instance['hours'])); ?></div>
+    </div>
     <?php
   }
 }
