@@ -69,7 +69,7 @@ class AgencyContact extends Core\ProudWidget {
       </div>
     </div><?php endif; ?>
 
-    <?php if($phone): ?><div class="row field-contact-fax">
+    <?php if($fax): ?><div class="row field-contact-fax">
       <div class="col-xs-2"><i class="fa fa-fax fa-2x text-muted"></i></div>
       <div class="col-xs-10">
         <a href="tel:<?php print esc_url($fax) ?>"><?php print esc_html($fax) ?></a> (FAX)
@@ -89,7 +89,7 @@ class AgencyContact extends Core\ProudWidget {
       </div>
     </div><?php endif; ?>
 
-    <?php if($phone): ?><div class="row field-contact-address">
+    <?php if($address): ?><div class="row field-contact-address">
       <div class="col-xs-2"><i class="fa fa-map-marker fa-2x text-muted"></i></div>
       <div class="col-xs-10">
         <?php print nl2br(esc_html($address)) ?>
