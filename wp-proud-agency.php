@@ -601,6 +601,23 @@ class AgencyContact extends \ProudPlugin {
       '#value' => esc_html( get_post_meta( $id, 'name', true ) ),
     ];
 
+    $this->fields['name_link'] = [
+      '#type' => 'text',
+      '#title' => __( 'Contact name link' ),
+      '#name' => 'name_link',
+      '#value' => esc_html( get_post_meta( $id, 'name_link', true ) ),
+      '#description' => __( 'If you enter a URL in this box, the Contact name above will turn into a link.' ),
+      '#states' => [
+        'visible' => [
+          'name' => [
+            'operator' => '!=',
+            'value' => [''],
+            'glue' => '||'
+          ],
+        ],
+      ],
+    ];
+
     $this->fields['email'] = [
       '#type' => 'text',
       '#title' => __( 'Contact email or form' ),
