@@ -762,7 +762,7 @@ new AgencySocial;
 /**
  * Gets the url for the agency homepage (internal or external)
  */
-function get_agency_permalink($post = 0) {
+function get_agency_permalink( $post = 0 ) {
   $post = $post > 0 ? $post : get_the_ID();
   $url = get_post_meta( $post, 'url', true );
 
