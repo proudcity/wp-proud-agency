@@ -32,10 +32,21 @@ class AgencyContact extends Core\ProudWidget {
     $instance['phone'] = get_post_meta( $id, 'phone', true );
     $instance['fax'] = get_post_meta( $id, 'fax', true );
     $instance['address'] = get_post_meta( $id, 'address', true );
+    $instance['hours'] = get_post_meta( $id, 'hours', true );
+    $instance['social'] = [];
+    foreach ( Proud\Agency\agency_social_services() as $service => $label ) {
+      $url = esc_html( get_post_meta( $id, 'social_'.$service, true ) );
+      if ( !empty( $url ) ) {
+          $instance['social'][$service] = $url;
+      }
+    }
+
     return !empty( $instance['name'] )  
         || !empty( $instance['email'] )
         || !empty( $instance['phone'] )
-        || !empty( $instance['address'] );
+        || !empty( $instance['address'] )
+        || !empty( $instance['hours'] )
+        || !empty( $instance['social'] );
   }
 
   /**
@@ -93,6 +104,28 @@ class AgencyContact extends Core\ProudWidget {
       <div class="col-xs-2"><i class="fa fa-map-marker fa-2x text-muted"></i></div>
       <div class="col-xs-10">
         <?php print nl2br(esc_html($address)) ?>
+        <hr/>
+      </div>
+    </div><?php endif; ?>
+
+    <?php if($address): ?><div class="row field-contact-hours">
+      <div class="col-xs-2"><i class="fa fa-clock-o fa-2x text-muted"></i></div>
+      <div class="col-xs-10">
+        <?php print nl2br(esc_html($hours)) ?>
+        <hr/>
+      </div>
+    </div><?php endif; ?>
+
+    <?php if( !empty( $instance['social'] ) ): ?><div class="row field-contact-social">
+      <div class="col-xs-2"><i class="fa fa-share-alt fa-2x text-muted"></i></div>
+      <div class="col-xs-10">
+        <ul class="list-inline">
+        <?php foreach ($instance['social'] as $service => $url): ?>
+          <li>
+            <a href="<?php print $url; ?>" title="<?php print ucfirst($service); ?>" target="_blank" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-<?php print $service; ?> fa-stack-1x fa-inverse"></i></a>
+          </li>
+        <?php endforeach; ?>
+        </ul>
       </div>
     </div><?php endif; ?>
 

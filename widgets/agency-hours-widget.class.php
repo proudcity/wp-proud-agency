@@ -24,6 +24,7 @@ class AgencyHours extends Core\ProudWidget {
    * @param array $instance Saved values from database.
    */
   public function hasContent( $args, &$instance ) {
+    return false;
     global $pageInfo;
     $id = get_post_type() === 'agency' ? get_the_ID(): $pageInfo['parent_post'];
     // Load hours

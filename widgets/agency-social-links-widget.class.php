@@ -24,16 +24,17 @@ class AgencySocial extends Core\ProudWidget {
    * @param array $instance Saved values from database.
    */
   public function hasContent( $args, &$instance ) {
+    return false;
     global $pageInfo;
     $id = get_post_type() === 'agency' ? get_the_ID(): $pageInfo['parent_post'];
     // show if social
     $instance['social'] = [];
     foreach ( Proud\Agency\agency_social_services() as $service => $label ) {
-        $url = esc_html( get_post_meta( $id, 'social_'.$service, true ) );
-        if ( !empty( $url ) ) {
-            $instance['social'][$service] = $url;
-        }
+      $url = esc_html( get_post_meta( $id, 'social_'.$service, true ) );
+      if ( !empty( $url ) ) {
+          $instance['social'][$service] = $url;
       }
+    }
     return !empty( $instance['social'] );
   }
 
