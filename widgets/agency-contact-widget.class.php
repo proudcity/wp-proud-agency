@@ -108,7 +108,7 @@ class AgencyContact extends Core\ProudWidget {
       </div>
     </div><?php endif; ?>
 
-    <?php if($address): ?><div class="row field-contact-hours">
+    <?php if($hours): ?><div class="row field-contact-hours">
       <div class="col-xs-2"><i class="fa fa-clock-o fa-2x text-muted"></i></div>
       <div class="col-xs-10">
         <?php print nl2br(esc_html($hours)) ?>
