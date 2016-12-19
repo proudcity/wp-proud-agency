@@ -179,7 +179,6 @@ class AgencySection extends \ProudMetaBox {
       '#type' => 'radios',
       '#title' => __('Type'),
       //'#description' => __('The type of search to fallback on when users don\'t find what they\'re looking for in the autosuggest search and make a full site search.', 'proud-settings'),
-      '#name' => 'agency_type',
       '#options' => array(
         'page' => __('Single page', 'proud'),
         'external' => __('External link', 'proud'),
@@ -187,11 +186,10 @@ class AgencySection extends \ProudMetaBox {
       ),
     ];
 
-    $this->fields['agency_url'] = [
+    $this->fields['url'] = [
       '#type' => 'text',
       '#title' => __('URL'),
       '#description' => __('Enter the full URL to an existing site'),
-      '#name' => 'agency_url',
       '#states' => [
         'visible' => [
           'agency_type' => [
@@ -207,7 +205,6 @@ class AgencySection extends \ProudMetaBox {
       '#type' => 'select',
       '#title' => __('Menu'),
       //'#description' => __('Enter the full url to the payment page'),
-      '#name' => 'post_menu',
       '#options' => [],
       '#states' => [
         'visible' => [
@@ -224,14 +221,12 @@ class AgencySection extends \ProudMetaBox {
       '#type' => 'fa-icon',
       '#title' => __('Icon'),
       '#description' => __('If you are using the Icon Button list style, select an icon'),
-      '#name' => 'agency_icon',
     ];
 
     $this->fields['list_exclude'] = [
       '#type' => 'checkbox',
       '#title' => __('Exclude from '. _x( 'Agency', 'post type singular name', 'wp-agency' ) .' Lists'),
       '#description' => __('Checking this box will cause this '. _x( 'Agency', 'post type singular name', 'wp-agency' ) .' to be hidden on the Government page'),
-      '#name' => 'list_exclude',
       '#return_value' => '1',
     ];
   }
@@ -265,7 +260,7 @@ class AgencySection extends \ProudMetaBox {
       $type = $values['agency_type'];
       update_post_meta( $post_id, 'agency_type', $type );
       if ('external' === $type) {
-        $url = $values['agency_url'];
+        $url = $values['url'];
         if ( empty($url) ) {
           delete_post_meta( $post_id, 'url');
         }
@@ -334,13 +329,11 @@ class AgencyContact extends \ProudMetaBox {
     $this->fields['name'] = [
       '#type' => 'text',
       '#title' => __( 'Contact name' ),
-      '#name' => 'name',
     ];
 
     $this->fields['name_link'] = [
       '#type' => 'text',
       '#title' => __( 'Contact name link' ),
-      '#name' => 'name_link',
       '#description' => __( 'If you enter a URL in this box, the Contact name above will turn into a link.' ),
       '#states' => [
         'visible' => [
@@ -356,33 +349,26 @@ class AgencyContact extends \ProudMetaBox {
     $this->fields['email'] = [
       '#type' => 'text',
       '#title' => __( 'Contact email or form' ),
-      '#name' => 'email',
     ];
 
     $this->fields['phone'] = [
       '#type' => 'text',
       '#title' => __( 'Contact phone' ),
-      '#name' => 'phone',
     ];
 
     $this->fields['fax'] = [
       '#type' => 'text',
       '#title' => __( 'Contact FAX' ),
-      '#name' => 'fax',
-
     ];
 
     $this->fields['address'] = [
       '#type' => 'textarea',
       '#title' => __( 'Contact address' ),
-      '#name' => 'address',
-
     ];
 
     $this->fields['hours'] = [
       '#type' => 'textarea',
       '#title' => __( 'Contact hours' ),
-      '#name' => 'hours',
       '#description' => __( 'Example:<Br/>Sunday: Closed<Br/>Monday: 9:30am - 9:00pm<Br/>Tuesday: 9:00am - 5:00pm' ),
     ];
 
