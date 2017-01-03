@@ -93,7 +93,7 @@ class Agency extends \ProudPlugin {
   }
 
   public function agency_rest_support() {
-    register_api_field( 'agency',
+    register_rest_field( 'agency',
           'meta',
           array(
               'get_callback'    => 'agency_rest_metadata',
