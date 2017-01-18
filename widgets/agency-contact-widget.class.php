@@ -75,7 +75,7 @@ class AgencyContact extends Core\ProudWidget {
     <?php if($phone): ?><div class="row field-contact-phone">
       <div class="col-xs-2"><i class="fa fa-phone fa-2x text-muted"></i></div>
       <div class="col-xs-10">
-        <a href="tel:<?php print esc_url($phone) ?>"><?php print esc_html($phone) ?></a>
+        <a href="tel:<?php print esc_html($phone) ?>"><?php print esc_html($phone) ?></a>
         <hr/>
       </div>
     </div><?php endif; ?>
