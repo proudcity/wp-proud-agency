@@ -131,6 +131,8 @@ class AgencyContact extends Core\ProudWidget {
       </div>
     </div><?php endif; ?>
 
+    </div>
+
     <style>
       .agency-contact-widget hr {
         margin: 16px 0;
