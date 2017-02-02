@@ -293,6 +293,7 @@ class AgencyContact extends \ProudMetaBox {
 
   public $options = [  // Meta options, key => default                             
     'name' => '',
+    'name_title' => '',
     'name_link' => '',
     'email' => '',
     'phone' => '',
@@ -329,6 +330,21 @@ class AgencyContact extends \ProudMetaBox {
     $this->fields['name'] = [
       '#type' => 'text',
       '#title' => __( 'Contact name' ),
+    ];
+
+    $this->fields['name_title'] = [
+      '#type' => 'text',
+      '#title' => __( 'Contact name title' ),
+      '#description' => __( 'This will appear directly below the Contact name.' ),
+      '#states' => [
+        'visible' => [
+          'name' => [
+            'operator' => '!=',
+            'value' => [''],
+            'glue' => '||'
+          ],
+        ],
+      ],
     ];
 
     $this->fields['name_link'] = [

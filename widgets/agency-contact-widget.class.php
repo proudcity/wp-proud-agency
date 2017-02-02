@@ -27,6 +27,7 @@ class AgencyContact extends Core\ProudWidget {
     global $pageInfo;
     $id = get_post_type() === 'agency' ? get_the_ID(): $pageInfo['parent_post'];
     $instance['name'] = get_post_meta( $id, 'name', true );
+    $instance['name_title'] = get_post_meta( $id, 'name_title', true );
     $instance['name_link'] = get_post_meta( $id, 'name_link', true );
     $instance['email'] = get_post_meta( $id, 'email', true );
     $instance['phone'] = get_post_meta( $id, 'phone', true );
@@ -68,6 +69,7 @@ class AgencyContact extends Core\ProudWidget {
         <?php else: ?>
           <?php print esc_html($name) ?>
         <?php endif; ?>
+        <?php if( !empty($name_title) ): ?><div><?php print esc_html($name_title) ?></div><?php endif; ?>
         <hr/>
       </div>
     </div><?php endif; ?>
