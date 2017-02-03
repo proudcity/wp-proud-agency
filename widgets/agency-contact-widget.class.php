@@ -77,7 +77,7 @@ class AgencyContact extends Core\ProudWidget {
     <?php if($phone): ?><div class="row field-contact-phone">
       <div class="col-xs-2"><i class="fa fa-phone fa-2x text-muted"></i></div>
       <div class="col-xs-10">
-        <a href="tel:<?php print esc_html($phone) ?>"><?php print esc_html($phone) ?></a>
+        <?php print Proud\Agency\AgencyContact::phone_tel_links($phone) ?></a>
         <hr/>
       </div>
     </div><?php endif; ?>
@@ -85,7 +85,7 @@ class AgencyContact extends Core\ProudWidget {
     <?php if($fax): ?><div class="row field-contact-fax">
       <div class="col-xs-2"><i class="fa fa-fax fa-2x text-muted"></i></div>
       <div class="col-xs-10">
-        <a href="tel:<?php print esc_url($fax) ?>"><?php print esc_html($fax) ?></a> (FAX)
+        <?php print Proud\Agency\AgencyContact::phone_tel_links($fax) ?> (FAX)
         <hr/>
       </div>
     </div><?php endif; ?>
@@ -93,11 +93,7 @@ class AgencyContact extends Core\ProudWidget {
     <?php if($email): ?><div class="row field-contact-email">
       <div class="col-xs-2"><i class="fa fa-2x text-muted fa-<?php if(filter_var( $email, FILTER_VALIDATE_EMAIL ) ): ?>envelope<?php else: ?>external-link<?php endif; ?>"></i></div>
       <div class="col-xs-10">
-        <?php if(filter_var( $email, FILTER_VALIDATE_EMAIL ) ): ?>
-          <a href="<?php print esc_url( "mailto:$email" ) ?>"><?php print esc_html( $email ) ?></a>
-        <?php else: ?>
-          <a href="<?php print esc_url( "$email" ) ?>"><?php print __('Contact us', 'wp-proud-agency') ?></a>
-        <?php endif; ?>
+        <?php print Proud\Agency\AgencyContact::email_mailto_links($email) ?>
         <hr/>
       </div>
     </div><?php endif; ?>
@@ -121,10 +117,10 @@ class AgencyContact extends Core\ProudWidget {
     <?php if( !empty( $instance['social'] ) ): ?><div class="row field-contact-social">
       <div class="col-xs-2"><i class="fa fa-share-alt fa-2x text-muted"></i></div>
       <div class="col-xs-10">
-        <ul class="list-inline">
+        <ul class="list-unstyled">
         <?php foreach ($instance['social'] as $service => $url): ?>
           <li>
-            <a href="<?php print $url; ?>" title="<?php print ucfirst($service); ?>" target="_blank" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-<?php print $service; ?> fa-stack-1x fa-inverse"></i></a>
+            <a href="<?php print $url; ?>" title="<?php print ucfirst($service); ?>" target="_blank"><i class="fa fa-fw fa-<?php print $service == 'instagram' ? $service : $service.'-square'; ?>"></i><?php print ucfirst($service); ?></a>
           </li>
         <?php endforeach; ?>
         </ul>

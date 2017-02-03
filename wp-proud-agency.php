@@ -47,6 +47,7 @@ class Agency extends \ProudPlugin {
   // Init on plugins loaded
   function agency_init_widgets() {
     require_once plugin_dir_path(__FILE__) . '/widgets/agency-contact-widget.class.php';
+    require_once plugin_dir_path(__FILE__) . '/widgets/custom-contact-widget.class.php';
     require_once plugin_dir_path(__FILE__) . '/widgets/agency-hours-widget.class.php';
     require_once plugin_dir_path(__FILE__) . '/widgets/agency-social-links-widget.class.php';
     require_once plugin_dir_path(__FILE__) . '/widgets/agency-menu-widget.class.php';
@@ -387,8 +388,23 @@ class AgencyContact extends \ProudMetaBox {
       '#title' => __( 'Contact hours' ),
       '#description' => __( 'Example:<Br/>Sunday: Closed<Br/>Monday: 9:30am - 9:00pm<Br/>Tuesday: 9:00am - 5:00pm' ),
     ];
-
+    
+    return $this->fields;
   }
+
+
+  public function phone_tel_links($s) {
+    $s = preg_replace('/\(?([0-9]{3})(\-| |\) ?)([0-9]{3})(\-| |\)?)([0-9]{4})/', '<a href="tel:($1) $3-$5" title="Call this number">($1) $3-$5</a>', $s);
+    return str_replace(',', '<br/>', $s);
+  }
+
+  public function email_mailto_links($s) {
+    $s = preg_replace('/(\S+@\S+\.\S+)/', '<a href="mailto:$1" title="Send email">$1</a>', $s);
+    return str_replace(',', '<br/>', $s);
+  }
+
+
+
 }
 if( is_admin() )
   new AgencyContact;
@@ -443,8 +459,10 @@ class AgencySocial extends \ProudMetaBox {
         '#name' => 'social_' . $service,
       ];
     }
+    return $this->fields;
   }
-}
+
+} // class
 if( is_admin() )
   new AgencySocial;
 
