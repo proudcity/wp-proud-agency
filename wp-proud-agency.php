@@ -325,15 +325,19 @@ class AgencyContact extends \ProudMetaBox {
     if( $displaying ) {
       return;
     }
+    
+    $this->fields = $this->get_fields();
+  }
 
-    $this->fields = [];
+  public function get_fields() {
+    $fields = [];
 
-    $this->fields['name'] = [
+    $fields['name'] = [
       '#type' => 'text',
       '#title' => __( 'Contact name' ),
     ];
 
-    $this->fields['name_title'] = [
+    $fields['name_title'] = [
       '#type' => 'text',
       '#title' => __( 'Contact name title' ),
       '#description' => __( 'This will appear directly below the Contact name.' ),
@@ -348,7 +352,7 @@ class AgencyContact extends \ProudMetaBox {
       ],
     ];
 
-    $this->fields['name_link'] = [
+    $fields['name_link'] = [
       '#type' => 'text',
       '#title' => __( 'Contact name link' ),
       '#description' => __( 'If you enter a URL in this box, the Contact name above will turn into a link.' ),
@@ -363,33 +367,33 @@ class AgencyContact extends \ProudMetaBox {
       ],
     ];
 
-    $this->fields['email'] = [
+    $fields['email'] = [
       '#type' => 'text',
       '#title' => __( 'Contact email or form' ),
     ];
 
-    $this->fields['phone'] = [
+    $fields['phone'] = [
       '#type' => 'text',
       '#title' => __( 'Contact phone' ),
     ];
 
-    $this->fields['fax'] = [
+    $fields['fax'] = [
       '#type' => 'text',
       '#title' => __( 'Contact FAX' ),
     ];
 
-    $this->fields['address'] = [
+    $fields['address'] = [
       '#type' => 'textarea',
       '#title' => __( 'Contact address' ),
     ];
 
-    $this->fields['hours'] = [
+    $fields['hours'] = [
       '#type' => 'textarea',
       '#title' => __( 'Contact hours' ),
       '#description' => __( 'Example:<Br/>Sunday: Closed<Br/>Monday: 9:30am - 9:00pm<Br/>Tuesday: 9:00am - 5:00pm' ),
     ];
-    
-    return $this->fields;
+
+    return $fields;
   }
 
 
@@ -450,16 +454,21 @@ class AgencySocial extends \ProudMetaBox {
       return;
     }
 
-    $this->fields = [];
+    $this->fields = $this->get_fields();
+  }
 
-    foreach ($this->agency_social_services() as $service => $label) {
-      $this->fields['social_' . $service] = [
+  public function get_fields() {
+
+    $fields = [];
+
+    foreach (agency_social_services() as $service => $label) {
+      $fields['social_' . $service] = [
         '#type' => 'text',
         '#title' => __( ucfirst($service) ),
         '#name' => 'social_' . $service,
       ];
     }
-    return $this->fields;
+    return $fields;
   }
 
 } // class

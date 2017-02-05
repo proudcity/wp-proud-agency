@@ -19,12 +19,12 @@ class CustomContact extends Core\ProudWidget {
    * @return  void
    */
   function initialize() {
-    $this->settings += Proud\Agency\AgencyContact::set_fields(false);
+    $this->settings += Proud\Agency\AgencyContact::get_fields(false);
     $this->settings['social_title'] = array(
       '#type' => 'html',
       '#html' => '<h3>Social Media Networks</h3>'
     );
-    $this->settings += Proud\Agency\AgencySocial::set_fields(false);
+    $this->settings += Proud\Agency\AgencySocial::get_fields(false);
   }
 
   // This is required by AgencySocial::set_fields()
