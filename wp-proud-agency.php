@@ -403,6 +403,7 @@ class AgencyContact extends \ProudMetaBox {
   }
 
   public function email_mailto_links($s) {
+    $s = preg_replace('/(https?:\/\/([\d\w\.-]+\.[\w\.]{2,6})[^\s\]\[\<\>]*)/i', '<a href="$1">Contact us</a>', $s);
     $s = preg_replace('/(\S+@\S+\.\S+)/', '<a href="mailto:$1" title="Send email">$1</a>', $s);
     return str_replace(',', '<br/>', $s);
   }
