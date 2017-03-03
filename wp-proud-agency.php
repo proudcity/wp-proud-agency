@@ -326,10 +326,10 @@ class AgencyContact extends \ProudMetaBox {
       return;
     }
     
-    $this->fields = $this->get_fields();
+    $this->fields = self::get_fields();
   }
 
-  public function get_fields() {
+  public static function get_fields() {
     $fields = [];
 
     $fields['name'] = [
@@ -397,12 +397,12 @@ class AgencyContact extends \ProudMetaBox {
   }
 
 
-  public function phone_tel_links($s) {
+  public static function phone_tel_links($s) {
     $s = preg_replace('/\(?([0-9]{3})(\-| |\) ?)([0-9]{3})(\-| |\)?)([0-9]{4})/', '<a href="tel:($1) $3-$5" title="Call this number">($1) $3-$5</a>', $s);
     return str_replace(',', '<br/>', $s);
   }
 
-  public function email_mailto_links($s) {
+  public static function email_mailto_links($s) {
     $s = preg_replace('/(https?:\/\/([\d\w\.-]+\.[\w\.]{2,6})[^\s\]\[\<\>]*)/i', '<a href="$1">Contact us</a>', $s);
     $s = preg_replace('/(\S+@\S+\.\S+)/', '<a href="mailto:$1" title="Send email">$1</a>', $s);
     return str_replace(',', '<br/>', $s);
@@ -427,20 +427,9 @@ class AgencySocial extends \ProudMetaBox {
     );
    
     // Build options
-    foreach ( $this->agency_social_services() as $service => $label ) {
+    foreach ( agency_social_services() as $service => $label ) {
       $this->options[ 'social_' . $service ]  = '';
     }
-  }
-
-  public function agency_social_services() {
-    return array(
-      'facebook' => 'http://facebook.com/pages/',
-      'twitter' => 'http://twitter.com/',
-      'instagram' => 'http://instagram.com/',
-      'youtube' => 'http://youtube.com/',
-      'rss' => 'Enter url to RSS news feed',
-      'ical' => 'Enter url to iCal calendar feed',
-    );
   }
 
   /**
@@ -455,10 +444,10 @@ class AgencySocial extends \ProudMetaBox {
       return;
     }
 
-    $this->fields = $this->get_fields();
+    $this->fields = self::get_fields();
   }
 
-  public function get_fields() {
+  public static function get_fields() {
 
     $fields = [];
 

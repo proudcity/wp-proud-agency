@@ -29,7 +29,7 @@ class CustomContact extends Core\ProudWidget {
 
   // This is required by AgencySocial::set_fields()
   public function agency_social_services() {
-    return Proud\Agency\AgencySocial::agency_social_services();
+    return Proud\Agency\agency_social_services();
   }
 
 
@@ -66,7 +66,8 @@ class CustomContact extends Core\ProudWidget {
    * @param array $instance
    */
   public function printWidget( $args, $instance ) {
-    return AgencyContact::printWidget( $args, $instance );
+    extract( $instance );
+    include(plugin_dir_path( __FILE__ ) . 'templates/agency-contact.php');
   }
 
 }
