@@ -299,6 +299,7 @@ class AgencyContact extends \ProudMetaBox {
     'email' => '',
     'phone' => '',
     'fax' => '',
+    'sms' => '',
     'address' => '',
     'hours' => '',
   ];
@@ -382,6 +383,12 @@ class AgencyContact extends \ProudMetaBox {
       '#title' => __( 'Contact FAX' ),
     ];
 
+    $fields['sms'] = [
+      '#type' => 'text',
+      '#title' => __( 'Contact SMS Number' ),
+      '#description' => __( 'This will open in the Text Message app on mobile devices.' ),
+    ];
+
     $fields['address'] = [
       '#type' => 'textarea',
       '#title' => __( 'Contact address' ),
@@ -397,8 +404,8 @@ class AgencyContact extends \ProudMetaBox {
   }
 
 
-  public static function phone_tel_links($s) {
-    $s = preg_replace('/\(?([0-9]{3})(\-| |\) ?)([0-9]{3})(\-| |\)?)([0-9]{4})/', '<a href="tel:($1) $3-$5" title="Call this number">($1) $3-$5</a>', $s);
+  public static function phone_tel_links($s, $prefix = 'tel') {
+    $s = preg_replace('/\(?([0-9]{3})(\-| |\) ?)([0-9]{3})(\-| |\)?)([0-9]{4})/', '<a href="' . $prefix . ':($1) $3-$5" title="Call this number">($1) $3-$5</a>', $s);
     return str_replace(',', '<br/>', $s);
   }
 

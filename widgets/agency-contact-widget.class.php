@@ -32,6 +32,7 @@ class AgencyContact extends Core\ProudWidget {
     $instance['email'] = get_post_meta( $id, 'email', true );
     $instance['phone'] = get_post_meta( $id, 'phone', true );
     $instance['fax'] = get_post_meta( $id, 'fax', true );
+    $instance['sms'] = get_post_meta( $id, 'sms', true );
     $instance['address'] = get_post_meta( $id, 'address', true );
     $instance['hours'] = get_post_meta( $id, 'hours', true );
     $instance['social'] = [];

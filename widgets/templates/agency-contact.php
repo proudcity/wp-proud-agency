@@ -28,6 +28,14 @@
     </div>
   </div><?php endif; ?>
 
+  <?php if($sms): ?><div class="row field-contact-sms">
+  <div class="col-xs-2"><i aria-hidden="true" class="fa fa-mobile fa-2x text-muted"></i></div>
+  <div class="col-xs-10">
+    <?php print Proud\Agency\AgencyContact::phone_tel_links($sms, 'sms') ?> (Text)
+    <hr/>
+  </div>
+  </div><?php endif; ?>
+
   <?php if($email): ?><div class="row field-contact-email">
     <div class="col-xs-2"><i aria-hidden="true" class="fa fa-2x text-muted fa-<?php if(filter_var( $email, FILTER_VALIDATE_EMAIL ) ): ?>envelope<?php else: ?>external-link<?php endif; ?>"></i></div>
     <div class="col-xs-10">
