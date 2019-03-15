@@ -3,7 +3,7 @@
     <div class="col-xs-2"><i aria-hidden="true" class="fa fa-user fa-2x text-muted"></i></div>
     <div class="col-xs-10">
       <?php if( !empty($name_link) ): ?>
-        <?php print sprintf( '<a href="%s" rel="bookmark">%s</a>', esc_url( $name_link ), esc_html($name) ); ?>
+        <?php print sprintf( '<a href="%s" rel="bookmark">%s</a>', $name_link, esc_html($name) ); ?>
       <?php else: ?>
         <?php print esc_html($name) ?>
       <?php endif; ?>

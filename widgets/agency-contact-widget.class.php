@@ -29,6 +29,7 @@ class AgencyContact extends Core\ProudWidget {
     $instance['name'] = get_post_meta( $id, 'name', true );
     $instance['name_title'] = get_post_meta( $id, 'name_title', true );
     $instance['name_link'] = get_post_meta( $id, 'name_link', true );
+    $instance['name_link'] = filter_var($instance['name_link'], FILTER_VALIDATE_EMAIL) ? "mailto:$instance[name_link]": esc_url( $instance['name_link'] );
     $instance['email'] = get_post_meta( $id, 'email', true );
     $instance['phone'] = get_post_meta( $id, 'phone', true );
     $instance['fax'] = get_post_meta( $id, 'fax', true );
