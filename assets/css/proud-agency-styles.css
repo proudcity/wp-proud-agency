@@ -1,0 +1,20 @@
+.field-contact-social .fa-tiktok-square{
+	background-image: url( '../images/tiktok-square.svg' );
+	background-repeat:no-repeat;
+	color:#075692;
+	filter: invert(15%) sepia(95%) saturate(3088%) hue-rotate(192deg) brightness(95%) contrast(94%);
+	width:15px;
+	height:15px;
+	margin:0 5px -1px 2px;
+}
+
+.field-contact-social .fa-nextdoor-square{
+	background-image: url( '../images/nextdoor-icon.svg' );
+	background-size:contain;
+	background-repeat:no-repeat;
+	color:#075692;
+	filter: invert(15%) sepia(95%) saturate(3088%) hue-rotate(192deg) brightness(95%) contrast(94%);
+	width:15px;
+	height:15px;
+	margin:0 5px -1px 2px;
+}
