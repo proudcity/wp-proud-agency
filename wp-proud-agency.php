@@ -176,7 +176,7 @@ class AgencySection extends \ProudMetaBox
     {
 
         // Already set
-        if($displaying) {
+        if ($displaying) {
 
             // Build menu options
             $menus = get_registered_nav_menus();
@@ -305,7 +305,7 @@ class AgencySection extends \ProudMetaBox
         }
     }
 }
-if(is_admin()) {
+if (is_admin()) {
     new AgencySection();
 }
 
@@ -345,7 +345,7 @@ class AgencyContact extends \ProudMetaBox
     {
 
         // Already set, no loading necessary
-        if($displaying) {
+        if ($displaying) {
             return;
         }
 
@@ -443,7 +443,7 @@ class AgencyContact extends \ProudMetaBox
 
 
 }
-if(is_admin()) {
+if (is_admin()) {
     new AgencyContact();
 }
 
@@ -475,7 +475,7 @@ class AgencySocial extends \ProudMetaBox
     public function set_fields($displaying)
     {
         // Already set, no loading necessary
-        if($displaying) {
+        if ($displaying) {
             return;
         }
 
@@ -498,7 +498,7 @@ class AgencySocial extends \ProudMetaBox
     }
 
 } // class
-if(is_admin()) {
+if (is_admin()) {
     new AgencySocial();
 }
 
@@ -525,7 +525,8 @@ function agency_social_services()
 {
     return array(
       'facebook' => 'http://facebook.com/pages/',
-      'twitter' => 'http://twitter.com/',
+		'twitter' => 'http://twitter.com/',
+		'x' => 'https://x.com',
       'instagram' => 'http://instagram.com/',
       'youtube' => 'http://youtube.com/',
       'rss' => 'Enter url to RSS news feed',
@@ -541,7 +542,7 @@ function agency_social_services()
  */
 function agency_pagebuilder_code($type)
 {
-    if($type === 'section') {
+    if ($type === 'section') {
         $code = array(
           'name' => __('Agency home page', 'proud'),
           'description' => __('Agency header and sidebar with contact info', 'proud'),    // Optional

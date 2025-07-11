@@ -63,10 +63,27 @@
   <?php if( !empty( $instance['social'] ) ): ?><div class="row field-contact-social">
     <div class="col-xs-2"><i aria-hidden="true" class="fa fa-share-alt fa-2x text-muted"></i></div>
     <div class="col-xs-10">
-      <ul class="list-unstyled">
+			<ul class="list-unstyled">
       <?php foreach ($instance['social'] as $service => $url): ?>
         <li>
-          <a href="<?php print $url; ?>" title="<?php print ucfirst($service); ?>" target="_blank"><i aria-hidden="true" class="fa fa-fw fa-<?php print $service == 'instagram' ? $service : $service.'-square'; ?>"></i><?php print ucfirst($service); ?></a>
+					<?php
+						if ( (string) $service === 'x') {
+							$service_class = 'x-twitter';
+						} elseif( (string) $service === 'ical'){
+							$service_class = 'calendar';
+						} elseif( (string) $service === 'nextdoor'){
+							$service_class = 'door-open';
+						} else {
+							$service_class = $service;
+						}
+
+						if ( in_array( $service, array( 'ical', 'rss', 'nextdoor'))){
+							$fa_classes = 'fa fa-solid ';
+						} else {
+							$fa_classes = 'fa fa-brands ';
+						}
+					?>
+					<a href="<?php print $url; ?>" title="<?php print ucfirst($service); ?>" target="_blank"><i aria-hidden="true" class="<?php echo  $fa_classes; ?> fa-<?php print in_array( $service, array( 'instagram', 'x', 'ical','tiktok', 'nextdoor' ) ) ? $service_class : 'square-'.$service_class; ?>"></i> <?php print ucfirst($service); ?></a>
         </li>
       <?php endforeach; ?>
       </ul>

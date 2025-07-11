@@ -16,7 +16,7 @@ class AgencySocial extends Core\ProudWidget {
   }
 
   /**
-   * Determines if content empty, show widget, title ect?  
+   * Determines if content empty, show widget, title ect?
    *
    * @see self::widget()
    *
@@ -45,10 +45,10 @@ class AgencySocial extends Core\ProudWidget {
    * @param array $instance
    */
   public function printWidget( $args, $instance ) {
-      if(!empty( $instance['social'] ) ) {  
+      if(!empty( $instance['social'] ) ) {
           ?>
-            <ul class="list-inline">
-            <?php foreach ($instance['social'] as $service => $url): ?>
+			<ul class="list-inline">
+				<?php foreach ($instance['social'] as $service => $url): ?>
               <li>
                 <a href="<?php print $url; ?>" title="<?php print ucfirst($service); ?>" target="_blank" class="fa-stack fa-lg"><i aria-hidden="true" class="fa fa-circle fa-stack-2x"></i><i aria-hidden="true" class="fa fa-<?php print $service; ?> fa-stack-1x fa-inverse"></i></a>
               </li>
