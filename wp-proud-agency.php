@@ -1,13 +1,13 @@
 <?php
-/*
+/**
 Plugin Name: Proud Agency
 Plugin URI: http://proudcity.com/
 Description: Declares an Agency custom post type.
-Version: 2024.08.19.1443
+Version: 2025.07.11.1223
 Author: ProudCity
 Author URI: http://proudcity.com/
 License: Affero GPL v3
-*/
+**/
 // @todo: use CMB2: https://github.com/WebDevStudios/CMB2 or https://github.com/humanmade/Custom-Meta-Boxes
 
 namespace Proud\Agency;
