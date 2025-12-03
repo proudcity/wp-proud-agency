@@ -3,7 +3,7 @@
 Plugin Name: Proud Agency
 Plugin URI: http://proudcity.com/
 Description: Declares an Agency custom post type.
-Version: 2025.12.03.1101
+Version: 2025.12.03.1153
 Author: ProudCity
 Author URI: http://proudcity.com/
 License: Affero GPL v3
@@ -58,11 +58,13 @@ class Agency extends \ProudPlugin
     // Init on plugins loaded
     public function agency_init_widgets()
     {
-        require_once plugin_dir_path(__FILE__) . '/widgets/agency-contact-widget.class.php';
-        require_once plugin_dir_path(__FILE__) . '/widgets/custom-contact-widget.class.php';
-        require_once plugin_dir_path(__FILE__) . '/widgets/agency-hours-widget.class.php';
-        require_once plugin_dir_path(__FILE__) . '/widgets/agency-social-links-widget.class.php';
-        require_once plugin_dir_path(__FILE__) . '/widgets/agency-menu-widget.class.php';
+        if (class_exists('ProudMetaBox')) {
+            require_once plugin_dir_path(__FILE__) . '/widgets/agency-contact-widget.class.php';
+            require_once plugin_dir_path(__FILE__) . '/widgets/custom-contact-widget.class.php';
+            require_once plugin_dir_path(__FILE__) . '/widgets/agency-hours-widget.class.php';
+            require_once plugin_dir_path(__FILE__) . '/widgets/agency-social-links-widget.class.php';
+            require_once plugin_dir_path(__FILE__) . '/widgets/agency-menu-widget.class.php';
+        }
     }
 
     public function create_agency()
