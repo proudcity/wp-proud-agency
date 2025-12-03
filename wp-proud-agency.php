@@ -3,7 +3,7 @@
 Plugin Name: Proud Agency
 Plugin URI: http://proudcity.com/
 Description: Declares an Agency custom post type.
-Version: 2025.07.11.1223
+Version: 2025.12.03.1101
 Author: ProudCity
 Author URI: http://proudcity.com/
 License: Affero GPL v3
@@ -145,362 +145,372 @@ class Agency extends \ProudPlugin
 $Agency = new Agency();
 
 // Agency meta box
-class AgencySection extends \ProudMetaBox
-{
-    public $options = [  // Meta options, key => default
-      'agency_type' => 'page',
-      'url' => '',
-      'post_menu' => 'new',
-      'agency_icon' => '',
-      'list_exclude' => ''
-    ];
-
-    public function __construct()
+if (class_exists('ProudMetaBox')) {
+    class AgencySection extends \ProudMetaBox
     {
-        parent::__construct(
-            'agency_section', // key
-            'Agency type', // title
-            'agency', // screen
-            'normal',  // position
-            'high' // priority
-        );
-    }
+        public $options = [  // Meta options, key => default
+        'agency_type' => 'page',
+        'url' => '',
+        'post_menu' => 'new',
+        'agency_icon' => '',
+        'list_exclude' => ''
+        ];
 
-    /**
-     * Called on form creation
-     * @param $displaying : false if just building form, true if about to display
-     * Use displaying:true to do any difficult loading that should only occur when
-     * the form actually will display
-     */
-    public function set_fields($displaying)
-    {
-
-        // Already set
-        if ($displaying) {
-
-            // Build menu options
-            $menus = get_registered_nav_menus();
-            $menus = get_terms('nav_menu', array( 'hide_empty' => false ));
-            global $menuArray;
-            $menuArray = array(
-              '' => 'No menu',
-              'new' => 'Create new menu',
+        public function __construct()
+        {
+            parent::__construct(
+                'agency_section', // key
+                'Agency type', // title
+                'agency', // screen
+                'normal',  // position
+                'high' // priority
             );
-            foreach ($menus as $menu) {
-                $menuArray[$menu->slug] = $menu->name;
-            }
-            $this->fields['post_menu']['#options'] = $menuArray;
-            return;
         }
 
-        $this->fields = [];
+        /**
+        * Called on form creation
+        * @param $displaying : false if just building form, true if about to display
+        * Use displaying:true to do any difficult loading that should only occur when
+        * the form actually will display
+        */
+        public function set_fields($displaying)
+        {
 
-        $this->fields['agency_type'] = [
-          '#type' => 'radios',
-          '#title' => __('Type'),
-          //'#description' => __('The type of search to fallback on when users don\'t find what they\'re looking for in the autosuggest search and make a full site search.', 'proud-settings'),
-          '#options' => array(
-            'page' => __('Single page', 'proud'),
-            'external' => __('External link', 'proud'),
-            'section' => __('Section', 'proud'),
-          ),
-        ];
+            // Already set
+            if ($displaying) {
 
-        $this->fields['url'] = [
-          '#type' => 'text',
-          '#title' => __('URL'),
-          '#description' => __('Enter the full URL to an existing site'),
-          '#states' => [
-            'visible' => [
-              'agency_type' => [
-                'operator' => '==',
-                'value' => ['external'],
-                'glue' => '||'
-              ],
-            ],
-          ],
-        ];
-
-        $this->fields['post_menu'] = [
-          '#type' => 'select',
-          '#title' => __('Menu'),
-          //'#description' => __('Enter the full url to the payment page'),
-          '#options' => [],
-          '#states' => [
-            'visible' => [
-              'agency_type' => [
-                'operator' => '==',
-                'value' => ['section'],
-                'glue' => '||'
-              ],
-            ],
-          ],
-        ];
-
-        $this->fields['agency_icon'] = [
-          '#type' => 'fa-icon',
-          '#title' => __('Icon'),
-          '#description' => __('If you are using the Icon Button list style, select an icon'),
-        ];
-
-        $this->fields['list_exclude'] = [
-          '#type' => 'checkbox',
-          '#title' => __('Exclude from '. _x('Agency', 'post type singular name', 'wp-agency') .' Lists'),
-          '#description' => __('Checking this box will cause this '. _x('Agency', 'post type singular name', 'wp-agency') .' to be hidden on the Government page'),
-          '#return_value' => '1',
-        ];
-    }
-
-    /**
-     * Displays the Agency Type metadata fieldset.
-     */
-    public function settings_content($post)
-    {
-        // Call parent
-        parent::settings_content($post);
-        // Add js settings
-        global $proudcore;
-        $settings = $this->get_field_names(['agency_type']);
-        $settings['isNewPost'] = empty($post->post_title);
-        $settings['agency_panels'] = [
-          'section' => agency_pagebuilder_code('section'),
-          'page' => agency_pagebuilder_code('page') // @TODO change to page + figure out how to update on click
-        ];
-        $proudcore->addJsSettings([
-          'proud_agency' => $settings
-        ]);
-    }
-
-    /**
-     * Saves form values
-     * OVERRIDEN from parent for additional processing
-     */
-    public function save_meta($post_id, $post, $update)
-    {
-        $values = $this->validate_values($post);
-        if (!empty($values['agency_type'])) {
-            $type = $values['agency_type'];
-            update_post_meta($post_id, 'agency_type', $type);
-            if ('external' === $type) {
-                $url = $values['url'];
-                if (empty($url)) {
-                    delete_post_meta($post_id, 'url');
-                } else {
-                    update_post_meta($post_id, 'url', esc_url($url));
+                // Build menu options
+                $menus = get_registered_nav_menus();
+                $menus = get_terms('nav_menu', array( 'hide_empty' => false ));
+                global $menuArray;
+                $menuArray = array(
+                '' => 'No menu',
+                'new' => 'Create new menu',
+                );
+                foreach ($menus as $menu) {
+                    $menuArray[$menu->slug] = $menu->name;
                 }
-            } elseif ('section' === $type) {
-                $menu = $values['post_menu'];
-                if ('new' === $menu) {
-                    $menuId = wp_create_nav_menu($post->post_title);
-                    $objMenu = get_term_by('id', $menuId, 'nav_menu');
-                    $menu = $objMenu->slug;
-                }
-                if (!is_array($menu)) {
-                    update_post_meta($post_id, 'post_menu', $menu);
-                }
+                $this->fields['post_menu']['#options'] = $menuArray;
+                return;
             }
 
-            update_post_meta($post_id, 'agency_icon', $values['agency_icon']);
-            update_post_meta($post_id, 'list_exclude', !empty($values['list_exclude']) ? 1 : 0);
-        }
-    }
-}
-if (is_admin()) {
-    new AgencySection();
-}
+            $this->fields = [];
 
-// Agency contact meta box
-class AgencyContact extends \ProudMetaBox
-{
-    public $options = [  // Meta options, key => default
-      'name' => '',
-      'name_title' => '',
-      'name_link' => '',
-      'email' => '',
-      'phone' => '',
-      'fax' => '',
-      'sms' => '',
-      'address' => '',
-      'hours' => '',
-    ];
+            $this->fields['agency_type'] = [
+            '#type' => 'radios',
+            '#title' => __('Type'),
+            //'#description' => __('The type of search to fallback on when users don\'t find what they\'re looking for in the autosuggest search and make a full site search.', 'proud-settings'),
+            '#options' => array(
+                'page' => __('Single page', 'proud'),
+                'external' => __('External link', 'proud'),
+                'section' => __('Section', 'proud'),
+            ),
+            ];
 
-    public function __construct()
-    {
-        parent::__construct(
-            'agency_contact', // key
-            'Contact information', // title
-            'agency', // screen
-            'normal',  // position
-            'high' // priority
-        );
-    }
-
-    /**
-     * Called on form creation
-     * @param $displaying : false if just building form, true if about to display
-     * Use displaying:true to do any difficult loading that should only occur when
-     * the form actually will display
-     */
-    public function set_fields($displaying)
-    {
-
-        // Already set, no loading necessary
-        if ($displaying) {
-            return;
-        }
-
-        $this->fields = self::get_fields();
-    }
-
-    public static function get_fields()
-    {
-        $fields = [];
-
-        $fields['name'] = [
-          '#type' => 'text',
-          '#title' => __('Contact name'),
-        ];
-
-        $fields['name_title'] = [
-          '#type' => 'text',
-          '#title' => __('Contact name title'),
-          '#description' => __('This will appear directly below the Contact name.'),
-          '#states' => [
-            'visible' => [
-              'name' => [
-                'operator' => '!=',
-                'value' => [''],
-                'glue' => '||'
-              ],
+            $this->fields['url'] = [
+            '#type' => 'text',
+            '#title' => __('URL'),
+            '#description' => __('Enter the full URL to an existing site'),
+            '#states' => [
+                'visible' => [
+                'agency_type' => [
+                    'operator' => '==',
+                    'value' => ['external'],
+                    'glue' => '||'
+                ],
+                ],
             ],
-          ],
-        ];
+            ];
 
-        $fields['name_link'] = [
-          '#type' => 'text',
-          '#title' => __('Contact name link'),
-          '#description' => __('If you enter a URL in this box, the Contact name above will turn into a link.'),
-          '#states' => [
-            'visible' => [
-              'name' => [
-                'operator' => '!=',
-                'value' => [''],
-                'glue' => '||'
-              ],
+            $this->fields['post_menu'] = [
+            '#type' => 'select',
+            '#title' => __('Menu'),
+            //'#description' => __('Enter the full url to the payment page'),
+            '#options' => [],
+            '#states' => [
+                'visible' => [
+                'agency_type' => [
+                    'operator' => '==',
+                    'value' => ['section'],
+                    'glue' => '||'
+                ],
+                ],
             ],
-          ],
-        ];
+            ];
 
-        $fields['email'] = [
-          '#type' => 'text',
-          '#title' => __('Contact email or form'),
-        ];
+            $this->fields['agency_icon'] = [
+            '#type' => 'fa-icon',
+            '#title' => __('Icon'),
+            '#description' => __('If you are using the Icon Button list style, select an icon'),
+            ];
 
-        $fields['phone'] = [
-          '#type' => 'text',
-          '#title' => __('Contact phone'),
-        ];
-
-        $fields['fax'] = [
-          '#type' => 'text',
-          '#title' => __('Contact FAX'),
-        ];
-
-        $fields['sms'] = [
-          '#type' => 'text',
-          '#title' => __('Contact SMS Number'),
-          '#description' => __('This will open in the Text Message app on mobile devices.'),
-        ];
-
-        $fields['address'] = [
-          '#type' => 'textarea',
-          '#title' => __('Contact address'),
-        ];
-
-        $fields['hours'] = [
-          '#type' => 'textarea',
-          '#title' => __('Contact hours'),
-          '#description' => __('Example:<Br/>Sunday: Closed<Br/>Monday: 9:30am - 9:00pm<Br/>Tuesday: 9:00am - 5:00pm'),
-        ];
-
-        return $fields;
-    }
-
-
-    public static function phone_tel_links($s, $prefix = 'tel')
-    {
-        $s = preg_replace('/\(?([0-9]{3})(\-| |\) ?)([0-9]{3})(\-| |\)?)([0-9]{4})/', '<a href="' . $prefix . ':($1) $3-$5" title="Call this number">($1) $3-$5</a>', $s);
-        return str_replace(',', '<br/>', $s);
-    }
-
-    public static function email_mailto_links($s)
-    {
-        $s = preg_replace('/(https?:\/\/([\d\w\.-]+\.[\w\.]{2,6})[^\s\]\[\<\>]*)/i', '<a href="$1">Contact us</a>', $s);
-        $s = preg_replace('/(\S+@\S+\.\S+)/', '<a href="mailto:$1" title="Send email">$1</a>', $s);
-        return str_replace(',', '<br/>', $s);
-    }
-
-
-
-}
-if (is_admin()) {
-    new AgencyContact();
-}
-
-// Agency social metabox
-class AgencySocial extends \ProudMetaBox
-{
-    public function __construct()
-    {
-        parent::__construct(
-            'agency_social', // key
-            'Social Media Accounts', // title
-            'agency', // screen
-            'normal',  // position
-            'high' // priority
-        );
-
-        // Build options
-        foreach (agency_social_services() as $service => $label) {
-            $this->options[ 'social_' . $service ]  = '';
-        }
-    }
-
-    /**
-     * Called on form creation
-     * @param $displaying : false if just building form, true if about to display
-     * Use displaying:true to do any difficult loading that should only occur when
-     * the form actually will display
-     */
-    public function set_fields($displaying)
-    {
-        // Already set, no loading necessary
-        if ($displaying) {
-            return;
-        }
-
-        $this->fields = self::get_fields();
-    }
-
-    public static function get_fields()
-    {
-
-        $fields = [];
-
-        foreach (agency_social_services() as $service => $label) {
-            $fields['social_' . $service] = [
-              '#type' => 'text',
-              '#title' => __(ucfirst($service)),
-              '#name' => 'social_' . $service,
+            $this->fields['list_exclude'] = [
+            '#type' => 'checkbox',
+            '#title' => __('Exclude from '. _x('Agency', 'post type singular name', 'wp-agency') .' Lists'),
+            '#description' => __('Checking this box will cause this '. _x('Agency', 'post type singular name', 'wp-agency') .' to be hidden on the Government page'),
+            '#return_value' => '1',
             ];
         }
-        return $fields;
+
+        /**
+        * Displays the Agency Type metadata fieldset.
+        */
+        public function settings_content($post)
+        {
+            // Call parent
+            parent::settings_content($post);
+            // Add js settings
+            global $proudcore;
+            $settings = $this->get_field_names(['agency_type']);
+            $settings['isNewPost'] = empty($post->post_title);
+            $settings['agency_panels'] = [
+            'section' => agency_pagebuilder_code('section'),
+            'page' => agency_pagebuilder_code('page') // @TODO change to page + figure out how to update on click
+            ];
+            $proudcore->addJsSettings([
+            'proud_agency' => $settings
+            ]);
+        }
+
+        /**
+        * Saves form values
+        * OVERRIDEN from parent for additional processing
+        */
+        public function save_meta($post_id, $post, $update)
+        {
+            $values = $this->validate_values($post);
+            if (!empty($values['agency_type'])) {
+                $type = $values['agency_type'];
+                update_post_meta($post_id, 'agency_type', $type);
+                if ('external' === $type) {
+                    $url = $values['url'];
+                    if (empty($url)) {
+                        delete_post_meta($post_id, 'url');
+                    } else {
+                        update_post_meta($post_id, 'url', esc_url($url));
+                    }
+                } elseif ('section' === $type) {
+                    $menu = $values['post_menu'];
+                    if ('new' === $menu) {
+                        $menuId = wp_create_nav_menu($post->post_title);
+                        $objMenu = get_term_by('id', $menuId, 'nav_menu');
+                        $menu = $objMenu->slug;
+                    }
+                    if (!is_array($menu)) {
+                        update_post_meta($post_id, 'post_menu', $menu);
+                    }
+                }
+
+                update_post_meta($post_id, 'agency_icon', $values['agency_icon']);
+                update_post_meta($post_id, 'list_exclude', !empty($values['list_exclude']) ? 1 : 0);
+            }
+        }
     }
 
-} // class
-if (is_admin()) {
-    new AgencySocial();
+    if (is_admin()) {
+        new AgencySection();
+    }
 }
+
+
+if (class_exists('ProudMetaBox')) {
+    // Agency contact meta box
+    class AgencyContact extends \ProudMetaBox
+    {
+        public $options = [  // Meta options, key => default
+        'name' => '',
+        'name_title' => '',
+        'name_link' => '',
+        'email' => '',
+        'phone' => '',
+        'fax' => '',
+        'sms' => '',
+        'address' => '',
+        'hours' => '',
+        ];
+
+        public function __construct()
+        {
+            parent::__construct(
+                'agency_contact', // key
+                'Contact information', // title
+                'agency', // screen
+                'normal',  // position
+                'high' // priority
+            );
+        }
+
+        /**
+        * Called on form creation
+        * @param $displaying : false if just building form, true if about to display
+        * Use displaying:true to do any difficult loading that should only occur when
+        * the form actually will display
+        */
+        public function set_fields($displaying)
+        {
+
+            // Already set, no loading necessary
+            if ($displaying) {
+                return;
+            }
+
+            $this->fields = self::get_fields();
+        }
+
+        public static function get_fields()
+        {
+            $fields = [];
+
+            $fields['name'] = [
+            '#type' => 'text',
+            '#title' => __('Contact name'),
+            ];
+
+            $fields['name_title'] = [
+            '#type' => 'text',
+            '#title' => __('Contact name title'),
+            '#description' => __('This will appear directly below the Contact name.'),
+            '#states' => [
+                'visible' => [
+                'name' => [
+                    'operator' => '!=',
+                    'value' => [''],
+                    'glue' => '||'
+                ],
+                ],
+            ],
+            ];
+
+            $fields['name_link'] = [
+            '#type' => 'text',
+            '#title' => __('Contact name link'),
+            '#description' => __('If you enter a URL in this box, the Contact name above will turn into a link.'),
+            '#states' => [
+                'visible' => [
+                'name' => [
+                    'operator' => '!=',
+                    'value' => [''],
+                    'glue' => '||'
+                ],
+                ],
+            ],
+            ];
+
+            $fields['email'] = [
+            '#type' => 'text',
+            '#title' => __('Contact email or form'),
+            ];
+
+            $fields['phone'] = [
+            '#type' => 'text',
+            '#title' => __('Contact phone'),
+            ];
+
+            $fields['fax'] = [
+            '#type' => 'text',
+            '#title' => __('Contact FAX'),
+            ];
+
+            $fields['sms'] = [
+            '#type' => 'text',
+            '#title' => __('Contact SMS Number'),
+            '#description' => __('This will open in the Text Message app on mobile devices.'),
+            ];
+
+            $fields['address'] = [
+            '#type' => 'textarea',
+            '#title' => __('Contact address'),
+            ];
+
+            $fields['hours'] = [
+            '#type' => 'textarea',
+            '#title' => __('Contact hours'),
+            '#description' => __('Example:<Br/>Sunday: Closed<Br/>Monday: 9:30am - 9:00pm<Br/>Tuesday: 9:00am - 5:00pm'),
+            ];
+
+            return $fields;
+        }
+
+
+        public static function phone_tel_links($s, $prefix = 'tel')
+        {
+            $s = preg_replace('/\(?([0-9]{3})(\-| |\) ?)([0-9]{3})(\-| |\)?)([0-9]{4})/', '<a href="' . $prefix . ':($1) $3-$5" title="Call this number">($1) $3-$5</a>', $s);
+            return str_replace(',', '<br/>', $s);
+        }
+
+        public static function email_mailto_links($s)
+        {
+            $s = preg_replace('/(https?:\/\/([\d\w\.-]+\.[\w\.]{2,6})[^\s\]\[\<\>]*)/i', '<a href="$1">Contact us</a>', $s);
+            $s = preg_replace('/(\S+@\S+\.\S+)/', '<a href="mailto:$1" title="Send email">$1</a>', $s);
+            return str_replace(',', '<br/>', $s);
+        }
+    }
+
+    if (is_admin()) {
+        new AgencyContact();
+    }
+}
+
+
+// Agency social metabox
+if (class_exists('ProudMetaBox')) {
+    class AgencySocial extends \ProudMetaBox
+    {
+        public function __construct()
+        {
+            parent::__construct(
+                'agency_social', // key
+                'Social Media Accounts', // title
+                'agency', // screen
+                'normal',  // position
+                'high' // priority
+            );
+
+            // Build options
+            foreach (agency_social_services() as $service => $label) {
+                $this->options[ 'social_' . $service ]  = '';
+            }
+        }
+
+        /**
+         * Called on form creation
+         *
+         * @param $displaying : false if just building form, true if about to display
+         *
+         * Use displaying:true to do any difficult loading that should only occur when
+         * the form actually will display
+         */
+        public function set_fields($displaying)
+        {
+            // Already set, no loading necessary
+            if ($displaying) {
+                return;
+            }
+
+            $this->fields = self::get_fields();
+        }
+
+        public static function get_fields()
+        {
+
+            $fields = [];
+
+            foreach (agency_social_services() as $service => $label) {
+                $fields['social_' . $service] = [
+                '#type' => 'text',
+                '#title' => __(ucfirst($service)),
+                '#name' => 'social_' . $service,
+                ];
+            }
+            return $fields;
+        }
+
+    } // class
+    if (is_admin()) {
+        new AgencySocial();
+    }
+}
+
 
 
 /**
@@ -525,8 +535,8 @@ function agency_social_services()
 {
     return array(
       'facebook' => 'http://facebook.com/pages/',
-		'twitter' => 'http://twitter.com/',
-		'x' => 'https://x.com',
+        'twitter' => 'http://twitter.com/',
+        'x' => 'https://x.com',
       'instagram' => 'http://instagram.com/',
       'youtube' => 'http://youtube.com/',
       'rss' => 'Enter url to RSS news feed',
