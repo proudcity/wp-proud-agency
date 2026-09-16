@@ -29,20 +29,25 @@ class AgencyContact extends Core\ProudWidget {
     $instance['name'] = get_post_meta( $id, 'name', true );
     $instance['name_title'] = get_post_meta( $id, 'name_title', true );
     $instance['name_link'] = get_post_meta( $id, 'name_link', true );
-    $instance['name_link'] = filter_var($instance['name_link'], FILTER_VALIDATE_EMAIL) ? "mailto:$instance[name_link]": esc_url( $instance['name_link'] );
+    // filter_var(FILTER_VALIDATE_EMAIL) accepts RFC quoted local parts, so a
+    // payload like '"><img/src/onerror=alert(1)>"@a.com' validates as an email
+    // and used to be concatenated into a mailto: and printed unescaped.
+    // sanitize_email() strips the characters that make that work, and is_email()
+    // rejects what is left if it is no longer an address, so a payload falls
+    // through to the esc_url() branch instead.
+    $email = sanitize_email( $instance['name_link'] );
+    $instance['name_link'] = ( !empty( $email ) && is_email( $email ) )
+        ? esc_url( 'mailto:' . $email )
+        : esc_url( $instance['name_link'] );
     $instance['email'] = get_post_meta( $id, 'email', true );
     $instance['phone'] = get_post_meta( $id, 'phone', true );
     $instance['fax'] = get_post_meta( $id, 'fax', true );
     $instance['sms'] = get_post_meta( $id, 'sms', true );
     $instance['address'] = get_post_meta( $id, 'address', true );
     $instance['hours'] = get_post_meta( $id, 'hours', true );
-    $instance['social'] = [];
-    foreach ( Proud\Agency\agency_social_services() as $service => $label ) {
-      $url = esc_html( get_post_meta( $id, 'social_'.$service, true ) );
-      if ( !empty( $url ) ) {
-          $instance['social'][$service] = $url;
-      }
-    }
+    // Writes both the flat social_<service> keys the shared template scans for
+    // and the nested 'social' array the emptiness check below reads.
+    $instance = array_merge( $instance, Proud\Agency\agency_social_meta( $id ) );
 
     return !empty( $instance['name'] )  
         || !empty( $instance['email'] )

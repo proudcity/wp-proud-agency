@@ -24,17 +24,9 @@ class AgencySocial extends Core\ProudWidget {
    * @param array $instance Saved values from database.
    */
   public function hasContent( $args, &$instance ) {
-    return false;
     global $pageInfo;
     $id = get_post_type() === 'agency' ? get_the_ID(): $pageInfo['parent_post'];
-    // show if social
-    $instance['social'] = [];
-    foreach ( Proud\Agency\agency_social_services() as $service => $label ) {
-      $url = esc_html( get_post_meta( $id, 'social_'.$service, true ) );
-      if ( !empty( $url ) ) {
-          $instance['social'][$service] = $url;
-      }
-    }
+    $instance = array_merge( $instance, Proud\Agency\agency_social_meta( $id ) );
     return !empty( $instance['social'] );
   }
 
@@ -45,17 +37,36 @@ class AgencySocial extends Core\ProudWidget {
    * @param array $instance
    */
   public function printWidget( $args, $instance ) {
-      if(!empty( $instance['social'] ) ) {
-          ?>
-			<ul class="list-inline">
-				<?php foreach ($instance['social'] as $service => $url): ?>
-              <li>
-                <a href="<?php print $url; ?>" title="<?php print ucfirst($service); ?>" target="_blank" class="fa-stack fa-lg"><i aria-hidden="true" class="fa fa-circle fa-stack-2x"></i><i aria-hidden="true" class="fa fa-<?php print $service; ?> fa-stack-1x fa-inverse"></i></a>
-              </li>
-            <?php endforeach; ?>
-            </ul>
-          <?php
-      }
+    if ( empty( $instance['social'] ) ) {
+      return;
+    }
+    ?>
+    <ul class="list-inline">
+      <?php foreach ( $instance['social'] as $service => $url ):
+        $classes = Proud\Agency\social_icon_classes( $service );
+        // Unsupported service, no icon to draw.
+        if ( $classes === null ) {
+          continue;
+        }
+        $schemes = Proud\Agency\social_allowed_schemes( $service );
+        $scheme  = (string) wp_parse_url( $url, PHP_URL_SCHEME );
+        if ( $scheme && !in_array( strtolower( $scheme ), $schemes, true ) ) {
+          continue;
+        }
+        $label = ucfirst( $service );
+      ?>
+        <li>
+          <a href="<?php echo esc_url( $url, $schemes ); ?>"
+             title="<?php echo esc_attr( $label ); ?>"
+             target="_blank"
+             rel="noopener noreferrer">
+            <i aria-hidden="true" class="<?php echo esc_attr( $classes ); ?> fa-2x"></i>
+            <span class="sr-only"><?php echo esc_html( $label ); ?></span>
+          </a>
+        </li>
+      <?php endforeach; ?>
+    </ul>
+    <?php
   }
 }
 

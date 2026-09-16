@@ -3,7 +3,9 @@
             <div class="col-xs-2"><i aria-hidden="true" class="fa fa-user fa-2x text-muted"></i></div>
             <div class="col-xs-10">
                 <?php if (!empty($name_link)): ?>
-                    <?php print sprintf('<a href="%s" rel="bookmark">%s</a>', $name_link, esc_html($name)); ?>
+                    <?php // CustomContact passes name_link straight through from a widget
+                          // field, so escape here rather than trusting the caller. ?>
+                    <?php print sprintf('<a href="%s" rel="bookmark">%s</a>', esc_url($name_link), esc_html($name)); ?>
                 <?php else: ?>
                     <?php print esc_html($name) ?>
                 <?php endif; ?>
@@ -62,41 +64,24 @@
 
     <?php
     /**
-     * Extract non-empty social links from $instance.
-     * - Whitelist allowed services to prevent unexpected icon/classes/labels.
-     * - Normalize + validate URLs (http/https; allow webcal for iCal if you want).
+     * Collect non-empty social links from $instance.
+     *
+     * Both widgets that use this template put the accounts on $instance as flat
+     * social_<service> keys: CustomContact from its own widget fields,
+     * AgencyContact from post meta via agency_social_meta(). The icon mapping
+     * and scheme allowlist live in wp-proud-agency.php so this template and the
+     * standalone AgencySocial widget cannot drift apart again.
      */
-
-    // Services we support + their FA icon name (where it differs from service key).
-    $icon_map = [
-        'facebook'  => 'facebook',
-        'twitter'   => 'twitter',
-        'x'         => 'x-twitter',
-        'instagram' => 'instagram',
-        'youtube'   => 'youtube',
-        'rss'       => 'rss',
-        'ical'      => 'calendar',   // solid icon
-        'nextdoor'  => 'door-open',  // solid icon
-        'tiktok'    => 'tiktok',
-        'snapchat'  => 'snapchat',
-    ];
-
-    $solid_icons = ['rss' => true, 'ical' => true, 'nextdoor' => true];
-
-    // If you prefer square-* for some brands, list those that should NOT be squared.
-    $no_square = ['instagram' => true, 'x' => true, 'ical' => true, 'tiktok' => true, 'nextdoor' => true];
-
     $socialLinks = [];
 
     foreach ($instance as $key => $value) {
-        // Only process string keys like "social_facebook".
         if (!is_string($key) || !str_starts_with($key, 'social_')) {
             continue;
         }
 
         $service = substr($key, 7); // strlen('social_') === 7
-        if ($service === '' || !isset($icon_map[$service])) {
-            continue; // Ignore unknown/unsupported services.
+        if (Proud\Agency\social_icon_classes($service) === null) {
+            continue; // Unknown/unsupported service.
         }
 
         $url = trim((string) $value);
@@ -104,10 +89,9 @@
             continue;
         }
 
-        // Hard validation: allow http(s). Optionally allow webcal for iCal feeds.
+        // Reject anything that is not an allowed scheme for this service.
         $scheme = (string) wp_parse_url($url, PHP_URL_SCHEME);
-        $allowed_schemes = ($service === 'ical') ? ['http', 'https', 'webcal'] : ['http', 'https'];
-        if ($scheme && !in_array(strtolower($scheme), $allowed_schemes, true)) {
+        if ($scheme && !in_array(strtolower($scheme), Proud\Agency\social_allowed_schemes($service), true)) {
             continue;
         }
 
@@ -123,17 +107,14 @@
             <div class="col-xs-10">
                 <ul class="list-unstyled">
                     <?php foreach ($socialLinks as $service => $url):
-                        $icon_name = $icon_map[$service];
-                        $fa_style  = isset($solid_icons[$service]) ? 'fa-solid' : 'fa-brands';
-                        $fa_icon   = isset($no_square[$service]) ? $icon_name : 'square-' . $icon_name;
-                        $label     = ucfirst($service);
+                        $label = ucfirst($service);
                     ?>
                         <li>
-                            <a href="<?php echo esc_url($url, ($service === 'ical') ? ['http', 'https', 'webcal'] : ['http', 'https']); ?>"
+                            <a href="<?php echo esc_url($url, Proud\Agency\social_allowed_schemes($service)); ?>"
                                 title="<?php echo esc_attr($label); ?>"
                                 target="_blank"
                                 rel="noopener noreferrer">
-                                <i aria-hidden="true" class="<?php echo esc_attr('fa ' . $fa_style . ' fa-' . $fa_icon); ?>"></i>
+                                <i aria-hidden="true" class="<?php echo esc_attr(Proud\Agency\social_icon_classes($service)); ?>"></i>
                                 <?php echo esc_html($label); ?>
                             </a>
                         </li>

@@ -4,7 +4,7 @@
 Plugin Name: Proud Agency
 Plugin URI: http://proudcity.com/
 Description: Declares an Agency custom post type.
-Version: 2026.02.02.1542
+Version: 2026.09.16.1351
 Author: ProudCity
 Author URI: http://proudcity.com/
 License: Affero GPL v3
@@ -431,17 +431,100 @@ if (class_exists('ProudMetaBox')) {
         }
 
 
-        public static function phone_tel_links($s, $prefix = 'tel')
+        /**
+         * Allowed markup in the contact free-text fields.
+         *
+         * These fields are linkified and printed as raw HTML, so their content
+         * has to be filtered. esc_html() is the wrong tool: editors legitimately
+         * use <br> here — San Rafael's Police department stores
+         * "Emergencies: 9-1-1   <br>  Main: (415) 485-3304" — and esc_html()
+         * would render that tag as visible text. This is the same allowlist
+         * wp-proud-core settled on for widget titles in #2916.
+         *
+         * @return array
+         */
+        private static function allowed_contact_html()
         {
-            $s = preg_replace('/\(?([0-9]{3})(\-| |\) ?)([0-9]{3})(\-| |\)?)([0-9]{4})/', '<a href="' . $prefix . ':($1) $3-$5" title="Call this number">($1) $3-$5</a>', $s);
-            return str_replace(',', '<br/>', $s);
+            return ['br' => []];
         }
 
+        /**
+         * Linkifies phone numbers in a contact free-text field.
+         *
+         * WARNING: the return value is HTML and is NOT attribute-safe. wp_kses()
+         * does not encode quotes, so this may only ever be printed as element
+         * content, which is what agency-contact.php and topic-contact.php do.
+         *
+         * @param string $s      Raw meta value.
+         * @param string $prefix Link scheme, 'tel' or 'sms'.
+         * @return string
+         */
+        public static function phone_tel_links($s, $prefix = 'tel')
+        {
+            // Filter first, then linkify: the anchors added below are ours and
+            // must not be stripped, and the text around them is editor input.
+            $s = wp_kses((string) $s, self::allowed_contact_html());
+
+            // Commas separate entries and become line breaks. Done BEFORE
+            // linkifying, so a comma inside a value cannot end up rewritten
+            // into markup inside a generated href.
+            $s = str_replace(',', '<br/>', $s);
+
+            // Every capture here is a digit group, so the generated href needs
+            // no further escaping. $prefix is ours ('tel' or 'sms') but is
+            // escaped anyway so a future caller cannot inject through it.
+            $prefix = esc_attr($prefix);
+
+            return preg_replace(
+                '/\(?([0-9]{3})(\-| |\) ?)([0-9]{3})(\-| |\)?)([0-9]{4})/',
+                '<a href="' . $prefix . ':($1) $3-$5" title="Call this number">($1) $3-$5</a>',
+                $s
+            );
+        }
+
+        /**
+         * Linkifies emails and contact-page URLs in a contact free-text field.
+         *
+         * WARNING: the return value is HTML and is NOT attribute-safe. See
+         * phone_tel_links().
+         *
+         * @param string $s Raw meta value.
+         * @return string
+         */
         public static function email_mailto_links($s)
         {
-            $s = preg_replace('/(https?:\/\/([\d\w\.-]+\.[\w\.]{2,6})[^\s\]\[\<\>]*)/i', '<a href="$1">Contact us</a>', $s);
-            $s = preg_replace('/(\S+@\S+\.\S+)/', '<a href="mailto:$1" title="Send email">$1</a>', $s);
-            return str_replace(',', '<br/>', $s);
+            $s = wp_kses((string) $s, self::allowed_contact_html());
+            $s = str_replace(',', '<br/>', $s);
+
+            // One pass over both patterns. Running them as two sequential
+            // preg_replace() calls meant the email pass scanned the URL pass's
+            // own output: the URL host pattern does not consume "@", so any
+            // contact URL containing one (https://city.gov/x?to=a@b.com) got
+            // re-matched and the anchor came out mangled.
+            //
+            // Both branches emit only esc_url()'d hrefs and esc_html()'d text.
+            return preg_replace_callback(
+                '/(https?:\/\/[^\s<>"\']+)|([^\s<>"\'=@]+@[^\s<>"\'=@]+\.[^\s<>"\'=@]+)/i',
+                function ($m) {
+                    // URL branch. Most departments store a contact-page URL in
+                    // this field rather than an address.
+                    if (!empty($m[1])) {
+                        $url = esc_url($m[1]);
+                        return '' === $url ? esc_html($m[1]) : '<a href="' . $url . '">Contact us</a>';
+                    }
+
+                    // Email branch. sanitize_email() strips the RFC quoted-string
+                    // characters that let a payload through
+                    // filter_var(FILTER_VALIDATE_EMAIL); is_email() then rejects
+                    // whatever is left if it is no longer an address.
+                    $email = sanitize_email($m[2]);
+                    if (empty($email) || !is_email($email)) {
+                        return esc_html($m[2]);
+                    }
+                    return '<a href="' . esc_url('mailto:' . $email) . '" title="Send email">' . esc_html($email) . '</a>';
+                },
+                $s
+            );
         }
     }
 
@@ -539,6 +622,86 @@ function agency_social_services()
         'tiktok' => 'Enter TikTok account URL',
         'snapchat' => 'Enter Snapchat URL',
     );
+}
+
+/**
+ * Maps a social service key to its Font Awesome 6 classes.
+ *
+ * Doubles as the allowlist for rendering: an unsupported service returns null,
+ * so callers can skip it rather than emitting a guessed icon class. Kept here
+ * rather than inline in the templates because it had drifted between
+ * agency-contact.php and agency-social-links-widget.class.php.
+ *
+ * @param string $service Service key from agency_social_services().
+ * @return string|null Font Awesome classes, or null if unsupported.
+ */
+function social_icon_classes($service)
+{
+    // Icon name where it differs from the service key.
+    $icon_map = [
+        'facebook'  => 'facebook',
+        'twitter'   => 'twitter',
+        'x'         => 'x-twitter',
+        'instagram' => 'instagram',
+        'youtube'   => 'youtube',
+        'rss'       => 'rss',
+        'ical'      => 'calendar',   // solid icon
+        'nextdoor'  => 'door-open',  // solid icon
+        'tiktok'    => 'tiktok',
+        'snapchat'  => 'snapchat',
+    ];
+
+    if (!is_string($service) || !isset($icon_map[$service])) {
+        return null;
+    }
+
+    // Not brands in FA6.
+    $solid_icons = ['rss' => true, 'ical' => true, 'nextdoor' => true];
+    // Brands with no square-* variant we want to use.
+    $no_square = ['instagram' => true, 'x' => true, 'ical' => true, 'tiktok' => true, 'nextdoor' => true];
+
+    $style = isset($solid_icons[$service]) ? 'fa-solid' : 'fa-brands';
+    $icon  = isset($no_square[$service]) ? $icon_map[$service] : 'square-' . $icon_map[$service];
+
+    return 'fa ' . $style . ' fa-' . $icon;
+}
+
+/**
+ * Schemes a given social service is allowed to link out with.
+ *
+ * @param string $service Service key.
+ * @return string[]
+ */
+function social_allowed_schemes($service)
+{
+    return $service === 'ical' ? ['http', 'https', 'webcal'] : ['http', 'https'];
+}
+
+/**
+ * Pulls an agency's social accounts out of post meta.
+ *
+ * Returns BOTH shapes on purpose: the flat social_<service> keys the shared
+ * contact template scans for, and the nested 'social' array older callers and
+ * the emptiness checks still read. Writing only one of the two is what broke
+ * the contact widget's social row in 9b60fdf.
+ *
+ * @param int $id Agency post ID.
+ * @return array
+ */
+function agency_social_meta($id)
+{
+    $out = ['social' => []];
+
+    foreach (agency_social_services() as $service => $label) {
+        $url = trim((string) get_post_meta($id, 'social_' . $service, true));
+        if ($url === '') {
+            continue;
+        }
+        $out['social'][$service] = $url;
+        $out['social_' . $service] = $url;
+    }
+
+    return $out;
 }
 
 /**
