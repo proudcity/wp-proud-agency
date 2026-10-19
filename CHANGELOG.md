@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026.10.19.1044
+
+### Agencies REST endpoint returned 500 on PHP 8 (#2981)
+
+- `GET /wp-json/wp/v2/agencies` and `/wp/v2/agencies/<id>` fataled on every site. `agency_rest_support()` registered the `meta` REST field with the bare string `'agency_rest_metadata'` as its `get_callback`, but that is a method on `Agency`, not a global function. The line dates to the first commit (8dff39e, 2015-12-14); PHP 7 only warned about the invalid callback, PHP 8 throws a `TypeError`, so the endpoint has been broken since the PHP 8 upgrade. Now `array($this, 'agency_rest_metadata')`.
+- The endpoint 500ing also turned every REST-walking scan into a burst of 5xx, which fired the tenant 5xx alert (wp-proudcity#2969) on palmviewtx 2026-10-17.
+- Added `tests/RestFieldTest.php`, which asserts the registered `get_callback` is callable. It fails against the old code.
+- Swept the other `wp-proud-*` and `proudcity-*` plugins for bare-string REST and hook callbacks that point at class methods. None found; the remaining bare strings are real global functions.
+
 ## 2026.09.16.1351
 
 ### Department social media widget not displaying (#2933)
