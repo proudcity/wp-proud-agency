@@ -1,3 +1,9 @@
+## 2026.10.26.1425
+
+- Fixed PHP 8 warnings when the agency contact, social links and menu widgets render on pages with no `$pageInfo`, and when the contact template has no `sms` value (wp-proudcity#3006). Behavior is unchanged.
+
+References: https://github.com/proudcity/wp-proudcity/issues/3006
+
 # Changelog
 
 ## 2026.10.19.1044

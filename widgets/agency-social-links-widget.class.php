@@ -25,7 +25,7 @@ class AgencySocial extends Core\ProudWidget {
    */
   public function hasContent( $args, &$instance ) {
     global $pageInfo;
-    $id = get_post_type() === 'agency' ? get_the_ID(): $pageInfo['parent_post'];
+    $id = get_post_type() === 'agency' ? get_the_ID(): ( $pageInfo['parent_post'] ?? null );
     $instance = array_merge( $instance, Proud\Agency\agency_social_meta( $id ) );
     return !empty( $instance['social'] );
   }

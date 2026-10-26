@@ -30,7 +30,7 @@
             </div>
         </div><?php endif; ?>
 
-    <?php if ($sms): ?><div class="row field-contact-sms">
+    <?php if (!empty($sms)): ?><div class="row field-contact-sms">
             <div class="col-xs-2"><i aria-hidden="true" class="fa fa-mobile fa-2x text-muted"></i></div>
             <div class="col-xs-10">
                 <?php print Proud\Agency\AgencyContact::phone_tel_links($sms, 'sms') ?> (Text)

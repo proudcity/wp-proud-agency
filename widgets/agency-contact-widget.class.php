@@ -25,7 +25,7 @@ class AgencyContact extends Core\ProudWidget {
    */
   public function hasContent( $args, &$instance ) {
     global $pageInfo;
-    $id = get_post_type() === 'agency' ? get_the_ID(): $pageInfo['parent_post'];
+    $id = get_post_type() === 'agency' ? get_the_ID(): ( $pageInfo['parent_post'] ?? null );
     $instance['name'] = get_post_meta( $id, 'name', true );
     $instance['name_title'] = get_post_meta( $id, 'name_title', true );
     $instance['name_link'] = get_post_meta( $id, 'name_link', true );

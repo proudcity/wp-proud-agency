@@ -49,7 +49,7 @@ class AgencyMenu extends Core\ProudWidget
             }
         } else {
             global $pageInfo;
-            $menu = $pageInfo['menu'];
+            $menu = $pageInfo['menu'] ?? null;
             $instance['menu_class'] = new Core\ProudMenu($menu);
         }
 
