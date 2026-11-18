@@ -4,7 +4,7 @@
 Plugin Name: Proud Agency
 Plugin URI: http://proudcity.com/
 Description: Declares an Agency custom post type.
-Version: 2026.11.18.1203
+Version: 2026.11.18.1220
 Author: ProudCity
 Author URI: http://proudcity.com/
 License: Affero GPL v3
