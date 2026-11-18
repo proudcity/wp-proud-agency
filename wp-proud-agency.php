@@ -74,31 +74,31 @@ class Agency extends \ProudPlugin
     public function create_agency()
     {
         $labels = array(
-            'name'               => _x('Agencies', 'post name', 'wp-proud-agency'),
-            'singular_name'      => _x('Agency', 'post type singular name', 'wp-proud-agency'),
-            'menu_name'          => _x('Agencies', 'admin menu', 'wp-proud-agency'),
-            'name_admin_bar'     => _x('Agency', 'add new on admin bar', 'wp-proud-agency'),
-            'add_new'            => _x('Add New', 'agency', 'wp-proud-agency'),
-            'add_new_item'       => __('Add New Agency', 'wp-proud-agency'),
-            'new_item'           => __('New Agency', 'wp-proud-agency'),
-            'edit_item'          => __('Edit Agency', 'wp-proud-agency'),
-            'view_item'          => __('View Agency', 'wp-proud-agency'),
-            'all_items'          => __('All agencies', 'wp-proud-agency'),
-            'search_items'       => __('Search agency', 'wp-proud-agency'),
-            'parent_item_colon'  => __('Parent agency:', 'wp-proud-agency'),
-            'not_found'          => __('No agencies found.', 'wp-proud-agency'),
-            'not_found_in_trash' => __('No agencies found in Trash.', 'wp-proud-agency')
+            'name'               => _x('Agencies', 'post name', 'wp-agency'),
+            'singular_name'      => _x('Agency', 'post type singular name', 'wp-agency'),
+            'menu_name'          => _x('Agencies', 'admin menu', 'wp-agency'),
+            'name_admin_bar'     => _x('Agency', 'add new on admin bar', 'wp-agency'),
+            'add_new'            => _x('Add New', 'agency', 'wp-agency'),
+            'add_new_item'       => __('Add New Agency', 'wp-agency'),
+            'new_item'           => __('New Agency', 'wp-agency'),
+            'edit_item'          => __('Edit Agency', 'wp-agency'),
+            'view_item'          => __('View Agency', 'wp-agency'),
+            'all_items'          => __('All agencies', 'wp-agency'),
+            'search_items'       => __('Search agency', 'wp-agency'),
+            'parent_item_colon'  => __('Parent agency:', 'wp-agency'),
+            'not_found'          => __('No agencies found.', 'wp-agency'),
+            'not_found_in_trash' => __('No agencies found in Trash.', 'wp-agency')
         );
 
         $args = array(
             'labels'             => $labels,
-            'description'        => __('Description.', 'wp-proud-agency'),
+            'description'        => __('Description.', 'wp-agency'),
             'public'             => true,
             'publicly_queryable' => true,
             'show_ui'            => true,
             'show_in_menu'       => true,
             'query_var'          => true,
-            'rewrite'            => array('slug' => _x('agencies', 'slug', 'wp-proud-agency')),
+            'rewrite'            => array('slug' => _x('agencies', 'slug', 'wp-agency')),
             'capability_type'    => 'post',
             'has_archive'        => false,
             'hierarchical'       => false,
@@ -163,7 +163,7 @@ class Agency extends \ProudPlugin
             return;
         }
         if (isset($_GET['proud_agency_menu_result']) && 'deleted' === $_GET['proud_agency_menu_result']) {
-            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__("The agency's menu was deleted.", 'wp-proud-agency') . '</p></div>';
+            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__("The agency's menu was deleted.", 'wp-agency') . '</p></div>';
         }
         $queue = get_transient('proud_agency_menu_queue_' . get_current_user_id());
         if (empty($queue) || !is_array($queue)) {
@@ -176,11 +176,11 @@ class Agency extends \ProudPlugin
             echo '<div class="notice notice-warning"><p>';
             printf(
                 /* translators: %s: menu name */
-                esc_html__("The agency's menu '%s' was not deleted.", 'wp-proud-agency'),
+                esc_html__("The agency's menu '%s' was not deleted.", 'wp-agency'),
                 esc_html($item['name'])
             );
-            echo ' <a href="' . esc_url($delete_url) . '">' . esc_html__('Delete menu', 'wp-proud-agency') . '</a> | ';
-            echo '<a href="' . esc_url($dismiss_url) . '">' . esc_html__('Keep menu', 'wp-proud-agency') . '</a>';
+            echo ' <a href="' . esc_url($delete_url) . '">' . esc_html__('Delete menu', 'wp-agency') . '</a> | ';
+            echo '<a href="' . esc_url($dismiss_url) . '">' . esc_html__('Keep menu', 'wp-agency') . '</a>';
             echo '</p></div>';
         }
     }
@@ -212,7 +212,7 @@ class Agency extends \ProudPlugin
     {
         $term_id = isset($_GET['term_id']) ? absint($_GET['term_id']) : 0;
         if (!current_user_can('edit_theme_options')) {
-            wp_die(esc_html__('You do not have permission to do that.', 'wp-proud-agency'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to do that.', 'wp-agency'), '', ['response' => 403]);
         }
         check_admin_referer($action . '_' . $term_id);
         return $term_id;
@@ -365,8 +365,8 @@ if (class_exists('ProudMetaBox')) {
 
             $this->fields['list_exclude'] = [
                 '#type' => 'checkbox',
-                '#title' => __('Exclude from ' . _x('Agency', 'post type singular name', 'wp-proud-agency') . ' Lists'),
-                '#description' => __('Checking this box will cause this ' . _x('Agency', 'post type singular name', 'wp-proud-agency') . ' to be hidden on the Government page'),
+                '#title' => __('Exclude from ' . _x('Agency', 'post type singular name', 'wp-agency') . ' Lists'),
+                '#description' => __('Checking this box will cause this ' . _x('Agency', 'post type singular name', 'wp-agency') . ' to be hidden on the Government page'),
                 '#return_value' => '1',
             ];
         }
@@ -424,7 +424,7 @@ if (class_exists('ProudMetaBox')) {
                                     'proud_agency_menu_notice_' . get_current_user_id(),
                                     sprintf(
                                         /* translators: %s: agency title */
-                                        __('A menu named "%s" already exists, so no menu was created for this agency. Rename the agency or choose the existing menu in the Menu field.', 'wp-proud-agency'),
+                                        __('A menu named "%s" already exists, so no menu was created for this agency. Rename the agency or choose the existing menu in the Menu field.', 'wp-agency'),
                                         $post->post_title
                                     ),
                                     5 * MINUTE_IN_SECONDS
