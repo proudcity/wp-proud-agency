@@ -4,7 +4,7 @@
 Plugin Name: Proud Agency
 Plugin URI: http://proudcity.com/
 Description: Declares an Agency custom post type.
-Version: 2026.10.26.1425
+Version: 2026.11.18.1203
 Author: ProudCity
 Author URI: http://proudcity.com/
 License: Affero GPL v3
@@ -40,6 +40,9 @@ class Agency extends \ProudPlugin
         $this->hook('plugins_loaded', 'agency_init_widgets');
         $this->hook('rest_api_init', 'agency_rest_support');
         $this->hook('before_delete_post', 'delete_agency_menu');
+        add_action('admin_notices', array($this, 'menu_delete_notice'));
+        add_action('admin_post_proud_agency_delete_menu', array($this, 'handle_delete_menu'));
+        add_action('admin_post_proud_agency_dismiss_menu', array($this, 'handle_dismiss_menu'));
     }
 
     //add assets
@@ -71,31 +74,31 @@ class Agency extends \ProudPlugin
     public function create_agency()
     {
         $labels = array(
-            'name'               => _x('Agencies', 'post name', 'wp-agency'),
-            'singular_name'      => _x('Agency', 'post type singular name', 'wp-agency'),
-            'menu_name'          => _x('Agencies', 'admin menu', 'wp-agency'),
-            'name_admin_bar'     => _x('Agency', 'add new on admin bar', 'wp-agency'),
-            'add_new'            => _x('Add New', 'agency', 'wp-agency'),
-            'add_new_item'       => __('Add New Agency', 'wp-agency'),
-            'new_item'           => __('New Agency', 'wp-agency'),
-            'edit_item'          => __('Edit Agency', 'wp-agency'),
-            'view_item'          => __('View Agency', 'wp-agency'),
-            'all_items'          => __('All agencies', 'wp-agency'),
-            'search_items'       => __('Search agency', 'wp-agency'),
-            'parent_item_colon'  => __('Parent agency:', 'wp-agency'),
-            'not_found'          => __('No agencies found.', 'wp-agency'),
-            'not_found_in_trash' => __('No agencies found in Trash.', 'wp-agency')
+            'name'               => _x('Agencies', 'post name', 'wp-proud-agency'),
+            'singular_name'      => _x('Agency', 'post type singular name', 'wp-proud-agency'),
+            'menu_name'          => _x('Agencies', 'admin menu', 'wp-proud-agency'),
+            'name_admin_bar'     => _x('Agency', 'add new on admin bar', 'wp-proud-agency'),
+            'add_new'            => _x('Add New', 'agency', 'wp-proud-agency'),
+            'add_new_item'       => __('Add New Agency', 'wp-proud-agency'),
+            'new_item'           => __('New Agency', 'wp-proud-agency'),
+            'edit_item'          => __('Edit Agency', 'wp-proud-agency'),
+            'view_item'          => __('View Agency', 'wp-proud-agency'),
+            'all_items'          => __('All agencies', 'wp-proud-agency'),
+            'search_items'       => __('Search agency', 'wp-proud-agency'),
+            'parent_item_colon'  => __('Parent agency:', 'wp-proud-agency'),
+            'not_found'          => __('No agencies found.', 'wp-proud-agency'),
+            'not_found_in_trash' => __('No agencies found in Trash.', 'wp-proud-agency')
         );
 
         $args = array(
             'labels'             => $labels,
-            'description'        => __('Description.', 'wp-agency'),
+            'description'        => __('Description.', 'wp-proud-agency'),
             'public'             => true,
             'publicly_queryable' => true,
             'show_ui'            => true,
             'show_in_menu'       => true,
             'query_var'          => true,
-            'rewrite'            => array('slug' => _x('agencies', 'slug', 'wp-agency')),
+            'rewrite'            => array('slug' => _x('agencies', 'slug', 'wp-proud-agency')),
             'capability_type'    => 'post',
             'has_archive'        => false,
             'hierarchical'       => false,
@@ -123,12 +126,114 @@ class Agency extends \ProudPlugin
     }
 
     /**
-     * Delete menu when agency is deleted.
+     * When an agency that created its own menu is permanently deleted, queue the
+     * menu so staff can be asked before it is deleted (see menu_delete_notice()).
+     * Agencies without the _proud_agency_menu_created flag are ignored, so a menu the agency
+     * merely selected is never offered for deletion.
      */
     public function delete_agency_menu($post_id)
     {
-        $menu = get_post_meta($post_id, 'post_menu');
-        wp_delete_nav_menu($menu);
+        if (get_post_type($post_id) !== 'agency') {
+            return;
+        }
+        $slug = get_post_meta($post_id, 'post_menu', true);
+        if (empty($slug) || !is_string($slug) || get_post_meta($post_id, '_proud_agency_menu_created', true) !== $slug) {
+            return;
+        }
+        $term = get_term_by('slug', $slug, 'nav_menu');
+        if (!$term) {
+            return;
+        }
+        $key = 'proud_agency_menu_queue_' . get_current_user_id();
+        $queue = get_transient($key);
+        $queue = is_array($queue) ? $queue : [];
+        $queue[$term->term_id] = ['term_id' => (int) $term->term_id, 'name' => $term->name];
+        set_transient($key, $queue, DAY_IN_SECONDS);
+    }
+
+    /**
+     * Admin notices for menus queued by delete_agency_menu() and for the result
+     * of acting on one.
+     *
+     * @action admin_notices
+     */
+    public function menu_delete_notice()
+    {
+        if (!current_user_can('edit_theme_options')) {
+            return;
+        }
+        if (isset($_GET['proud_agency_menu_result']) && 'deleted' === $_GET['proud_agency_menu_result']) {
+            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__("The agency's menu was deleted.", 'wp-proud-agency') . '</p></div>';
+        }
+        $queue = get_transient('proud_agency_menu_queue_' . get_current_user_id());
+        if (empty($queue) || !is_array($queue)) {
+            return;
+        }
+        foreach ($queue as $item) {
+            $term_id = absint($item['term_id']);
+            $delete_url = wp_nonce_url(admin_url('admin-post.php?action=proud_agency_delete_menu&term_id=' . $term_id), 'proud_agency_delete_menu_' . $term_id);
+            $dismiss_url = wp_nonce_url(admin_url('admin-post.php?action=proud_agency_dismiss_menu&term_id=' . $term_id), 'proud_agency_dismiss_menu_' . $term_id);
+            echo '<div class="notice notice-warning"><p>';
+            printf(
+                /* translators: %s: menu name */
+                esc_html__("The agency's menu '%s' was not deleted.", 'wp-proud-agency'),
+                esc_html($item['name'])
+            );
+            echo ' <a href="' . esc_url($delete_url) . '">' . esc_html__('Delete menu', 'wp-proud-agency') . '</a> | ';
+            echo '<a href="' . esc_url($dismiss_url) . '">' . esc_html__('Keep menu', 'wp-proud-agency') . '</a>';
+            echo '</p></div>';
+        }
+    }
+
+    /**
+     * @action admin_post_proud_agency_delete_menu
+     */
+    public function handle_delete_menu()
+    {
+        $term_id = $this->menu_action_term_id('proud_agency_delete_menu');
+        $term = get_term($term_id, 'nav_menu');
+        $result = 'dismissed';
+        if ($term && !is_wp_error($term) && 'nav_menu' === $term->taxonomy && true === wp_delete_nav_menu($term_id)) {
+            $result = 'deleted';
+        }
+        $this->menu_action_redirect($term_id, $result);
+    }
+
+    /**
+     * @action admin_post_proud_agency_dismiss_menu
+     */
+    public function handle_dismiss_menu()
+    {
+        $term_id = $this->menu_action_term_id('proud_agency_dismiss_menu');
+        $this->menu_action_redirect($term_id, 'dismissed');
+    }
+
+    private function menu_action_term_id($action)
+    {
+        $term_id = isset($_GET['term_id']) ? absint($_GET['term_id']) : 0;
+        if (!current_user_can('edit_theme_options')) {
+            wp_die(esc_html__('You do not have permission to do that.', 'wp-proud-agency'), '', ['response' => 403]);
+        }
+        check_admin_referer($action . '_' . $term_id);
+        return $term_id;
+    }
+
+    private function menu_action_redirect($term_id, $result)
+    {
+        $key = 'proud_agency_menu_queue_' . get_current_user_id();
+        $queue = get_transient($key);
+        if (is_array($queue)) {
+            unset($queue[$term_id]);
+            if ($queue) {
+                set_transient($key, $queue, DAY_IN_SECONDS);
+            } else {
+                delete_transient($key);
+            }
+        }
+        $back = wp_get_referer();
+        $back = $back ? remove_query_arg(['proud_agency_menu_result'], $back) : admin_url('edit.php?post_type=agency');
+        wp_safe_redirect(add_query_arg('proud_agency_menu_result', $result, $back));
+        exit;
     }
 
     /**
@@ -167,6 +272,20 @@ if (class_exists('ProudMetaBox')) {
                 'normal',  // position
                 'high' // priority
             );
+            add_action('admin_notices', [$this, 'menu_notice']);
+        }
+
+        /**
+         * Shows the notice stored when the agency's menu could not be created.
+         */
+        public function menu_notice()
+        {
+            $key = 'proud_agency_menu_notice_' . get_current_user_id();
+            $message = get_transient($key);
+            if ($message) {
+                delete_transient($key);
+                echo '<div class="notice notice-warning is-dismissible"><p>' . esc_html($message) . '</p></div>';
+            }
         }
 
         /**
@@ -246,8 +365,8 @@ if (class_exists('ProudMetaBox')) {
 
             $this->fields['list_exclude'] = [
                 '#type' => 'checkbox',
-                '#title' => __('Exclude from ' . _x('Agency', 'post type singular name', 'wp-agency') . ' Lists'),
-                '#description' => __('Checking this box will cause this ' . _x('Agency', 'post type singular name', 'wp-agency') . ' to be hidden on the Government page'),
+                '#title' => __('Exclude from ' . _x('Agency', 'post type singular name', 'wp-proud-agency') . ' Lists'),
+                '#description' => __('Checking this box will cause this ' . _x('Agency', 'post type singular name', 'wp-proud-agency') . ' to be hidden on the Government page'),
                 '#return_value' => '1',
             ];
         }
@@ -291,13 +410,43 @@ if (class_exists('ProudMetaBox')) {
                     }
                 } elseif ('section' === $type) {
                     $menu = $values['post_menu'];
+                    $old_menu = get_post_meta($post_id, 'post_menu', true);
+                    $created = false;
                     if ('new' === $menu) {
                         $menuId = wp_create_nav_menu($post->post_title);
-                        $objMenu = get_term_by('id', $menuId, 'nav_menu');
-                        $menu = $objMenu->slug;
+                        if (is_wp_error($menuId)) {
+                            $existing = (is_string($old_menu) && '' !== $old_menu) ? get_term_by('slug', $old_menu, 'nav_menu') : false;
+                            if ($existing && $existing->name === $post->post_title) {
+                                // save_meta runs twice per save; this agency's menu was created by the first run.
+                                $menu = $old_menu;
+                            } else {
+                                set_transient(
+                                    'proud_agency_menu_notice_' . get_current_user_id(),
+                                    sprintf(
+                                        /* translators: %s: agency title */
+                                        __('A menu named "%s" already exists, so no menu was created for this agency. Rename the agency or choose the existing menu in the Menu field.', 'wp-proud-agency'),
+                                        $post->post_title
+                                    ),
+                                    5 * MINUTE_IN_SECONDS
+                                );
+                                $menu = null;
+                            }
+                        } else {
+                            $objMenu = get_term_by('id', $menuId, 'nav_menu');
+                            $menu = $objMenu ? $objMenu->slug : null;
+                            $created = (bool) $objMenu;
+                        }
                     }
-                    if (!is_array($menu)) {
+                    if (!empty($menu) && !is_array($menu)) {
                         update_post_meta($post_id, 'post_menu', $menu);
+                        if ($created) {
+                            update_post_meta($post_id, '_proud_agency_menu_created', $menu);
+                        } elseif ($menu !== $old_menu) {
+                            delete_post_meta($post_id, '_proud_agency_menu_created');
+                        }
+                    } elseif ('' === $menu) {
+                        delete_post_meta($post_id, 'post_menu');
+                        delete_post_meta($post_id, '_proud_agency_menu_created');
                     }
                 }
 

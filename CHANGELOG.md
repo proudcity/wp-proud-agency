@@ -1,3 +1,10 @@
+## 2026.11.18.1203
+
+- Fixed every permanent post delete (any post type) logging an "Array to string conversion" warning from `delete_agency_menu()`. It now returns early unless the post is an agency and never deletes automatically: when an agency that created its own menu (protected `_proud_agency_menu_created` flag) is permanently deleted, an admin notice offers Delete menu | Keep menu (nonce-protected, `edit_theme_options`). Agencies that selected an existing menu, and agencies created before this change, are never prompted (wp-proudcity#3030).
+- Creating an agency menu whose name already exists no longer passes a `WP_Error` to `get_term_by()` and reads a property of `false`; a notice explains why no menu was created.
+
+References: https://github.com/proudcity/wp-proudcity/issues/3030
+
 ## 2026.10.26.1425
 
 - Fixed PHP 8 warnings when the agency contact, social links and menu widgets render on pages with no `$pageInfo`, and when the contact template has no `sms` value (wp-proudcity#3006). Behavior is unchanged.
